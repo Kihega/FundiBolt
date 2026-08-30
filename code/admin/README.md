@@ -1,22 +1,40 @@
 # FundiBolt Admin Dashboard
 
-Not yet scaffolded. This will be a Next.js app deployed on Vercel.
+Next.js (TypeScript) admin dashboard for FundiBolt, deployed on Vercel.
 
-## To scaffold (run once, from code/web):
+## Purpose
 
-    cd code/web
-    npx create-next-app@latest . --typescript
+Used by administrators to:
+- Review and approve/reject pending fundi registrations
+- Manage service categories
+- Monitor users and bookings
+- Monitor fundi subscription status and revenue
+- Handle disputes
+- View basic platform analytics
 
-When prompted, recommended choices:
-  - ESLint: Yes
-  - Tailwind CSS: Yes
-  - App Router: Yes
-  - src/ directory: Yes
+## Setup
 
-## After scaffolding
-
-    cp .env.example .env.local
+    cd code/admin
+    npm install
+    cp .env.example .env.local   # point NEXT_PUBLIC_API_URL at your backend
     npm run dev
 
-Then connect this folder to Vercel (import the GitHub repo, set the
-root directory to `code/web` in Vercel project settings).
+Runs by default at `http://localhost:3000`.
+
+## Environment Variables
+
+| Variable | Purpose |
+|---|---|
+| `NEXT_PUBLIC_API_URL` | Base URL of the FundiBolt backend API (Render in production) |
+
+## Deployment
+
+Connected to Vercel via GitHub. Vercel project root directory should be
+set to `code/admin`. Every merge to `main` triggers a production deploy;
+PRs get automatic preview deployments.
+
+## Notes
+
+- `.env.local` is gitignored — never commit real values.
+- This dashboard talks only to the backend API — it does not connect to
+  Supabase or Redis directly.
