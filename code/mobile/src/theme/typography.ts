@@ -1,10 +1,10 @@
-// Lora for headings/branding (warm, editorial serif - calmer than a tech/neon feel)
-// Inter for body text (clean, highly legible)
+// Poppins for headings/branding (bold sans, matches the reference design)
+// Inter for body text
 
 export const fontFamily = {
-  headingBold: "Lora_700Bold",
-  headingSemiBold: "Lora_600SemiBold",
-  headingMedium: "Lora_500Medium",
+  headingBold: "Poppins_700Bold",
+  headingSemiBold: "Poppins_600SemiBold",
+  headingMedium: "Poppins_500Medium",
   bodyRegular: "Inter_400Regular",
   bodyMedium: "Inter_500Medium",
   bodySemiBold: "Inter_600SemiBold",

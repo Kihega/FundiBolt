@@ -17,4 +17,8 @@ export const env = {
   upstashRedisUrl: required("UPSTASH_REDIS_REST_URL"),
   upstashRedisToken: required("UPSTASH_REDIS_REST_TOKEN"),
   jwtSecret: required("JWT_SECRET"),
+
+  // Optional - if not set, OTP codes are logged to the console instead of emailed.
+  resendApiKey: process.env.RESEND_API_KEY || "",
+  emailFrom: process.env.EMAIL_FROM || "FundiBolt <onboarding@resend.dev>",
 };

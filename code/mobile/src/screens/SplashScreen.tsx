@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from "react";
-import { View, Image, Animated, StyleSheet, Easing } from "react-native";
+import { View, Animated, StyleSheet, Easing } from "react-native";
 import { useTheme } from "../theme/ThemeContext";
 
 type Props = { onFinish: () => void };
@@ -10,7 +10,7 @@ export default function SplashScreen({ onFinish }: Props) {
   const logoScale = useRef(new Animated.Value(0.6)).current;
   const logoOpacity = useRef(new Animated.Value(0)).current;
   const textOpacity = useRef(new Animated.Value(0)).current;
-  const textTranslateY = useRef(new Animated.Value(12)).current;
+  const textTranslateY = useRef(new Animated.Value(16)).current;
   const glowPulse = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
@@ -20,7 +20,7 @@ export default function SplashScreen({ onFinish }: Props) {
       Animated.spring(logoScale, { toValue: 1, friction: 6, tension: 50, useNativeDriver: true }),
     ]).start();
 
-    // Gentle warm glow breathing loop - subtler than a neon pulse
+    // Gentle warm glow breathing loop
     Animated.loop(
       Animated.sequence([
         Animated.timing(glowPulse, { toValue: 1, duration: 1600, easing: Easing.inOut(Easing.ease), useNativeDriver: true }),
@@ -28,16 +28,27 @@ export default function SplashScreen({ onFinish }: Props) {
       ])
     ).start();
 
-    // Brand text entrance
+    // Brand text: soft blink-in flicker, then settles into place
     Animated.sequence([
-      Animated.delay(400),
+      Animated.delay(450),
       Animated.parallel([
-        Animated.timing(textOpacity, { toValue: 1, duration: 650, useNativeDriver: true }),
-        Animated.timing(textTranslateY, { toValue: 0, duration: 650, easing: Easing.out(Easing.cubic), useNativeDriver: true }),
+        Animated.timing(textTranslateY, {
+          toValue: 0,
+          duration: 700,
+          easing: Easing.out(Easing.cubic),
+          useNativeDriver: true,
+        }),
+        Animated.sequence([
+          Animated.timing(textOpacity, { toValue: 1, duration: 90, useNativeDriver: true }),
+          Animated.timing(textOpacity, { toValue: 0.25, duration: 80, useNativeDriver: true }),
+          Animated.timing(textOpacity, { toValue: 1, duration: 90, useNativeDriver: true }),
+          Animated.timing(textOpacity, { toValue: 0.5, duration: 90, useNativeDriver: true }),
+          Animated.timing(textOpacity, { toValue: 1, duration: 250, useNativeDriver: true }),
+        ]),
       ]),
     ]).start();
 
-    const timer = setTimeout(onFinish, 2600);
+    const timer = setTimeout(onFinish, 2800);
     return () => clearTimeout(timer);
   }, []);
 
@@ -47,7 +58,6 @@ export default function SplashScreen({ onFinish }: Props) {
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={styles.logoWrap}>
-        {/* Soft warm glow rings - understated, not neon */}
         <Animated.View
           style={[
             styles.glowRing,
@@ -98,7 +108,7 @@ const styles = StyleSheet.create({
   logoWrap: {
     alignItems: "center",
     justifyContent: "center",
-    marginBottom: 24,
+    marginBottom: 40,
   },
   glowRing: {
     position: "absolute",
@@ -117,6 +127,7 @@ const styles = StyleSheet.create({
     height: 150,
   },
   brandText: {
+    marginTop: 8,
     letterSpacing: 0.5,
   },
 });

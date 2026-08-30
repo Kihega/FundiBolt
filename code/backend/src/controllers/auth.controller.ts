@@ -6,8 +6,8 @@ import { signToken } from "../utils/jwt";
 export async function signup(req: Request, res: Response) {
   const { fullName, email, phone, password } = req.body;
 
-  if (!fullName || !email || !phone || !password) {
-    return res.status(400).json({ message: "fullName, email, phone, and password are all required." });
+  if (!fullName || !email || !password) {
+    return res.status(400).json({ message: "fullName, email, and password are required." });
   }
   if (password.length < 6) {
     return res.status(400).json({ message: "Password must be at least 6 characters." });
@@ -15,7 +15,7 @@ export async function signup(req: Request, res: Response) {
 
   try {
     const existing = await prisma.user.findFirst({
-      where: { OR: [{ email }, { phone }] },
+      where: phone ? { OR: [{ email }, { phone }] } : { email },
     });
     if (existing) {
       return res.status(409).json({ message: "An account with this email or phone already exists." });
@@ -24,8 +24,8 @@ export async function signup(req: Request, res: Response) {
     const passwordHash = await hashPassword(password);
 
     const user = await prisma.user.create({
-      data: { fullName, email, phone, passwordHash },
-      select: { id: true, fullName: true, email: true, phone: true, role: true, createdAt: true },
+      data: { fullName, email, phone: phone || null, passwordHash },
+      select: { id: true, fullName: true, email: true, phone: true, role: true, emailVerified: true, createdAt: true },
     });
 
     const token = signToken({ userId: user.id, role: user.role });
@@ -67,6 +67,7 @@ export async function login(req: Request, res: Response) {
         email: user.email,
         phone: user.phone,
         role: user.role,
+        emailVerified: user.emailVerified,
       },
       token,
     });

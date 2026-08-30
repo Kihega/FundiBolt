@@ -1,5 +1,4 @@
 import React, { createContext, useContext, useMemo, useState } from "react";
-import { useColorScheme } from "react-native";
 import { darkColors, lightColors, ThemeColors } from "./colors";
 import { fontFamily, fontSize, spacing, radius } from "./typography";
 
@@ -16,10 +15,11 @@ type ThemeContextValue = {
 const ThemeContext = createContext<ThemeContextValue | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const systemScheme = useColorScheme();
-  const [override, setOverride] = useState<"dark" | "light" | null>(null);
+  // Forced dark by default, regardless of the device's system theme setting.
+  // Still toggleable later via toggleTheme() once a settings screen exists.
+  const [mode, setMode] = useState<"dark" | "light">("dark");
 
-  const isDark = override ? override === "dark" : systemScheme !== "light";
+  const isDark = mode === "dark";
 
   const value = useMemo<ThemeContextValue>(
     () => ({
@@ -29,7 +29,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       spacing,
       radius,
       isDark,
-      toggleTheme: () => setOverride(isDark ? "light" : "dark"),
+      toggleTheme: () => setMode(isDark ? "light" : "dark"),
     }),
     [isDark]
   );

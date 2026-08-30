@@ -1,31 +1,32 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { View } from "react-native";
 import * as SplashScreenNative from "expo-splash-screen";
 import { useFonts, Inter_400Regular, Inter_500Medium, Inter_600SemiBold } from "@expo-google-fonts/inter";
-import { Lora_500Medium, Lora_600SemiBold, Lora_700Bold } from "@expo-google-fonts/lora";
+import { Poppins_500Medium, Poppins_600SemiBold, Poppins_700Bold } from "@expo-google-fonts/poppins";
 
-import { ThemeProvider, useTheme } from "./src/theme/ThemeContext";
+import { ThemeProvider } from "./src/theme/ThemeContext";
 import SplashScreen from "./src/screens/SplashScreen";
 import WelcomeScreen from "./src/screens/WelcomeScreen";
 import LoginScreen from "./src/screens/LoginScreen";
 import SignupScreen from "./src/screens/SignupScreen";
+import OtpVerificationScreen from "./src/screens/OtpVerificationScreen";
+import HomeScreen from "./src/screens/HomeScreen";
 
 SplashScreenNative.preventAutoHideAsync();
 
-type Screen = "splash" | "welcome" | "login" | "signup" | "home";
+type Screen = "splash" | "welcome" | "login" | "signup" | "otp" | "home";
 
 function Root() {
-  const { colors } = useTheme();
   const [screen, setScreen] = useState<Screen>("splash");
   const [authToken, setAuthToken] = useState<string | null>(null);
+  const [pendingEmail, setPendingEmail] = useState<string>("");
 
   const [fontsLoaded] = useFonts({
     Inter_400Regular,
     Inter_500Medium,
     Inter_600SemiBold,
-    Lora_500Medium,
-    Lora_600SemiBold,
-    Lora_700Bold,
+    Poppins_500Medium,
+    Poppins_600SemiBold,
+    Poppins_700Bold,
   });
 
   const onLayoutRootView = useCallback(async () => {
@@ -63,17 +64,29 @@ function Root() {
   if (screen === "signup") {
     return (
       <SignupScreen
-        onSignupSuccess={(token) => {
+        onSignupSuccess={({ token, email }) => {
           setAuthToken(token);
-          setScreen("home");
+          setPendingEmail(email);
+          setScreen("otp");
         }}
         onGoToLogin={() => setScreen("login")}
       />
     );
   }
 
-  // Placeholder home - next patch will build this out properly
-  return <View style={{ flex: 1, backgroundColor: colors.background }} />;
+  if (screen === "otp") {
+    return <OtpVerificationScreen email={pendingEmail} onVerified={() => setScreen("home")} />;
+  }
+
+  return (
+    <HomeScreen
+      onLogout={() => {
+        setAuthToken(null);
+        setPendingEmail("");
+        setScreen("welcome");
+      }}
+    />
+  );
 }
 
 export default function App() {

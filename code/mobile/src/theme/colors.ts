@@ -1,59 +1,59 @@
-// FundiBolt color system - warm, minimal aesthetic.
-// Cream/charcoal backgrounds, terracotta + amber accents, muted olive green
-// as a nod to the original logo's green without going neon/techy.
+// FundiBolt color system - purple/violet dark theme.
 
 export const darkColors = {
-  background: "#211C17",
-  backgroundElevated: "#2A241D",
-  surface: "#2A241D",
-  surfaceElevated: "#332C23",
-  border: "#453C30",
+  background: "#0B0A14",
+  backgroundGradientTop: "#1B1030",
+  backgroundElevated: "#120E24",
+  surface: "#17151F",
+  surfaceElevated: "#1F1C2C",
+  border: "#2A273A",
 
-  primary: "#D98E4A",       // warm amber
-  primaryDark: "#B76E2F",
-  secondary: "#8FA377",     // muted olive green
-  secondaryDark: "#6B8256",
-  accent: "#E0A868",        // soft amber highlight
-  accentDark: "#C1633D",    // terracotta
+  primary: "#7C5CFC",
+  primaryDark: "#5F3FE0",
+  secondary: "#9B8AFB",
+  secondaryDark: "#7C5CFC",
+  accent: "#B497FF",
+  accentDark: "#8A72F2",
 
-  textPrimary: "#F5EFE6",
-  textSecondary: "#C9BFAF",
-  textMuted: "#8F8574",
-  placeholder: "#8F8574",
+  textPrimary: "#FFFFFF",
+  textSecondary: "#A8A3B8",
+  textMuted: "#6E6980",
+  placeholder: "#6E6980",
 
-  success: "#8FA377",
-  error: "#D9714F",
-  warning: "#E0B368",
+  success: "#4CAF50",
+  error: "#E5484D",
+  warning: "#F5A623",
 
-  glowPrimary: "#E0A868",
-  glowSecondary: "#D98E4A",
+  glowPrimary: "#7C5CFC",
+  glowSecondary: "#9B8AFB",
 };
 
 export const lightColors = {
-  background: "#F7F3EC",
+  background: "#F5F3FB",
+  backgroundGradientTop: "#EDE8FB",
   backgroundElevated: "#FFFFFF",
   surface: "#FFFFFF",
-  surfaceElevated: "#F0EAE0",
-  border: "#E5DDD0",
+  surfaceElevated: "#EDEAFB",
+  border: "#DCD6F0",
 
-  primary: "#C1633D",       // terracotta
-  primaryDark: "#A34E2C",
-  secondary: "#7A8B69",     // muted olive green
-  secondaryDark: "#5C6B4E",
-  accent: "#D98E4A",        // warm amber
-  accentDark: "#B76E2F",
+  primary: "#6C4CE0",
+  primaryDark: "#5433C4",
+  secondary: "#8A72F2",
+  secondaryDark: "#6C4CE0",
+  accent: "#A98BFF",
+  accentDark: "#8A72F2",
 
-  textPrimary: "#2B241D",
-  textSecondary: "#6B5F52",
-  textMuted: "#9C9184",
-  placeholder: "#9C9184",
+  textPrimary: "#161320",
+  textSecondary: "#5B5570",
+  textMuted: "#8C86A0",
+  placeholder: "#8C86A0",
 
-  success: "#6B8F52",
-  error: "#B3492F",
-  warning: "#D9A441",
+  success: "#2E7D32",
+  error: "#C62828",
+  warning: "#B8860B",
 
-  glowPrimary: "#E8A868",
-  glowSecondary: "#C1633D",
+  glowPrimary: "#8A72F2",
+  glowSecondary: "#6C4CE0",
 };
 
 export type ThemeColors = typeof darkColors;
