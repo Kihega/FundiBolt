@@ -1,1353 +1,246 @@
-# FundiBolt Requirements Analysis Report
+# FundiBolt — Project Proposal
+### A Local Fundi Marketplace for Dar es Salaam
 
-## Dar es Salaam Local Fundi Marketplace
+**Version:** 1.0
+**Target Market:** Dar es Salaam, Tanzania
+**Platform:** Mobile Marketplace App (React Native / Expo)
+**Prepared as:** Startup MVP Proposal
 
-**Version:** 1.1\
-**Target Market:** Dar es Salaam, Tanzania\
-**System Type:** Mobile Marketplace Platform\
-**Primary Users:** Customers, Fundis, Administrators
+---
 
-------------------------------------------------------------------------
+## 1. Executive Summary
 
-## 1. Introduction
+FundiBolt is a mobile marketplace that connects customers in Dar es Salaam with nearby, verified local service providers ("mafundi") — including plumbers, electricians, carpenters, painters, AC technicians, welders, masons, appliance repair technicians, and CCTV installers.
 
-FundiBolt is a mobile-based marketplace designed to connect customers in
-Dar es Salaam with nearby and verified service providers, commonly known
-as *mafundi*. The platform will allow customers to search for suitable
-fundis based on service type and geographical location, view fundi
-profiles, request services, communicate with fundis, track bookings,
-make payments, and provide ratings.
+The platform solves a simple, widespread problem: finding a trustworthy, available, nearby fundi today relies on word-of-mouth, phone contacts, or social media — with no central, searchable, ratings-based system. FundiBolt organizes this into one app.
 
-Fundis will use the platform to create professional profiles, specify
-their skills and service areas, receive service requests, manage
-bookings, communicate with customers, select a payment method for
-receiving their earnings, and monitor their earnings.
+The MVP will launch in **selected parts of Dar es Salaam only**, focusing on proving real bookings and real revenue before expanding citywide or nationally.
 
-An administrator will manage the marketplace by verifying fundis,
-managing users and services, monitoring bookings and payments, tracking
-platform commissions and income, handling disputes, and monitoring
-overall platform performance.
+---
 
-The initial implementation will focus exclusively on **Dar es Salaam**.
-Expansion to other regions will occur after the Dar es Salaam
-marketplace demonstrates sufficient user adoption, completed
-transactions, and sustainable revenue.
+## 2. Problem Statement
 
-------------------------------------------------------------------------
+- Customers struggle to quickly find a nearby, available, and trustworthy fundi.
+- Fundis have no centralized platform to advertise skills, manage bookings, or build a reputation through reviews.
+- There is no simple way for customers to compare fundis by rating, location, or service type before committing.
 
-# 2. Problem Statement
+---
 
-Customers in Dar es Salaam often rely on personal recommendations,
-social media, phone contacts, or informal networks when searching for
-fundis. This can make it difficult to quickly identify a suitable,
-available, nearby, and trustworthy service provider.
+## 3. Objectives
 
-At the same time, many fundis lack a centralized digital platform
-through which they can advertise their skills, reach new customers,
-manage service requests, and build a reputation through customer
-reviews.
+The platform will:
 
-FundiBolt will address this gap by providing a location-based digital
-marketplace that connects customers with suitable fundis and provides
-tools for managing the complete service-request lifecycle.
+1. Allow customers to register, search, and book verified fundis by service type and location.
+2. Allow fundis to register, build a profile, and receive booking requests.
+3. Allow customers and fundis to communicate directly in-app.
+4. Allow customers to rate and review fundis after job completion.
+5. Allow administrators to verify fundis before they appear in search.
+6. Generate platform revenue through fundi subscriptions and customer-facing ads.
+7. Provide administrators with tools to monitor users, bookings, and platform health.
 
-------------------------------------------------------------------------
+---
 
-# 3. Main Objective
+## 4. Target Users
 
-To develop a mobile marketplace platform that connects customers in Dar
-es Salaam with nearby and verified fundis while providing a reliable
-system for service booking, communication, payments, fundi earnings,
-commission management, reviews, and marketplace administration.
+| User Type | Role |
+|---|---|
+| **Customer** | Searches for and books fundis, communicates, rates completed jobs |
+| **Fundi** | Service provider — builds profile, receives and manages bookings |
+| **Administrator** | Verifies fundis, manages services/users, monitors platform activity |
 
-------------------------------------------------------------------------
+---
 
-# 4. Specific Objectives
+## 5. Initial Services Supported
 
-The system shall:
+1. Plumbing
+2. Electrical services
+3. Carpentry
+4. Painting
+5. Air-conditioning services
+6. Welding
+7. Masonry
+8. Appliance repair
+9. CCTV camera installation & maintenance
 
-1.  Allow customers to register and manage their accounts.
-2.  Allow fundis to register and create professional service profiles.
-3.  Allow administrators to verify and manage fundi accounts.
-4.  Allow customers to search for fundis based on service category and
-    location.
-5.  Allow customers to view fundi profiles, ratings, skills,
-    availability, and service areas.
-6.  Allow customers to request and book fundis.
-7.  Allow fundis to accept or reject service requests.
-8.  Allow customers and fundis to communicate through the platform.
-9.  Allow fundis to add a preferred payment method for receiving
-    earnings.
-10. Allow customers to make payments through supported bank and
-    mobile-money payment methods.
-11. Automatically deduct a 10% platform commission from every confirmed
-    customer payment.
-12. Record the 10% commission in the administrator wallet/ledger for
-    income tracking.
-13. Transfer the remaining 90% to the selected fundi's registered
-    payment destination.
-14. Allow fundis to monitor their earnings and payment history.
-15. Allow customers to rate and review fundis after completed jobs.
-16. Allow administrators to monitor users, bookings, transactions,
-    commissions, and disputes.
-17. Provide financial and marketplace analytics to support business
-    decisions.
+Additional services can be added later via the admin dashboard.
 
-------------------------------------------------------------------------
+---
 
-# 5. Target Users
+## 6. Core Features (MVP Scope)
 
-The system will have three primary user categories:
+### Customer
+- Register / login
+- Manage profile
+- Search fundis by service + location
+- View fundi profile, skills, ratings, availability
+- Send booking/service requests
+- Upload photos describing the problem
+- Chat with fundi
+- Track booking status
+- Confirm job completion
+- Rate and review fundi
+- Report a problem/dispute
 
--   Customer
--   Fundi
--   Administrator
+### Fundi
+- Register / login
+- Create professional profile (photo, skills, service description)
+- Set service area, location, and availability
+- Receive and accept/reject booking requests
+- Chat with customers
+- Update job status
+- View ratings and reviews
+- View subscription status
 
-------------------------------------------------------------------------
+### Administrator
+- Review and verify pending fundis (approve/reject/suspend/reactivate)
+- Manage service categories
+- Monitor users and bookings
+- Monitor fundi subscription status and revenue
+- Handle disputes
+- View basic platform analytics
 
-# 6. Customer Requirements
+---
 
-A customer is a person looking for a fundi to perform a service.
+## 7. Fundi Verification Flow
 
-Customers shall be able to:
+A fundi does not appear in search results immediately after registering.
 
--   Create an account.
--   Login/logout.
--   Manage their profile.
--   Select a service.
--   Search for nearby fundis.
--   View fundi profiles.
--   View fundi ratings and reviews.
--   Check fundi availability.
--   Send service requests.
--   Upload photos describing a problem.
--   Provide service location.
--   Select preferred date/time.
--   Receive and review quotations where applicable.
--   Accept quotations.
--   Communicate with fundis.
--   Track booking status.
--   Make payments using supported payment methods.
--   View payment status and transaction reference.
--   View booking history.
--   Confirm job completion.
--   Rate and review fundis.
--   Report problems or disputes.
-
-------------------------------------------------------------------------
-
-# 7. Fundi Requirements
-
-A fundi is a service provider offering one or more services.
-
-## 7.1 Initial Services
-
-The initial FundiBolt marketplace shall support:
-
-1.  Plumbing
-2.  Electrical services
-3.  Carpentry
-4.  Painting
-5.  Air-conditioning services
-6.  Welding
-7.  Masonry
-8.  Appliance repair
-9.  **CCTV camera installation and services**
-
-CCTV services may include installation, configuration, maintenance,
-troubleshooting, camera replacement, DVR/NVR setup, and related
-services.
-
-Additional services may be added later through the administrator
-dashboard.
-
-## 7.2 Fundi Profile
-
-Fundis shall be able to:
-
--   Register an account.
--   Login/logout.
--   Create a professional profile.
--   Add a profile photo.
--   Add skills.
--   Select one or more service categories.
--   Add a service description.
--   Specify service areas.
--   Provide geographical location.
--   Set a service radius.
--   Set availability.
--   Receive booking requests.
--   Accept or reject requests.
--   View relevant customer and booking information.
--   Communicate with customers.
--   Update job status.
--   Submit quotations where applicable.
--   View completed jobs.
--   View earnings.
--   View ratings and reviews.
--   Manage availability.
-
-------------------------------------------------------------------------
-
-# 8. Fundi Verification Requirements
-
-A fundi must not automatically become publicly available immediately
-after registration.
-
-The process shall be:
-
-``` text
+```
 Fundi Registration
-        ↓
+      ↓
 Profile Completion
-        ↓
-Verification Information
-        ↓
+      ↓
 Administrator Review
-        ↓
+      ↓
 Approved / Rejected
-        ↓
-If Approved
-        ↓
-Fundi becomes searchable
-```
-
-The administrator shall be able to:
-
--   View pending fundis.
--   Review submitted information.
--   Approve a fundi.
--   Reject a fundi.
--   Suspend a fundi.
--   Reactivate a fundi.
-
-A **Verified** indicator shall only be displayed when the administrator
-has actually approved the account.
-
-------------------------------------------------------------------------
-
-# 9. Fundi Payment Method Requirements
-
-Every fundi who wants to receive money through FundiBolt must add at
-least one valid payment method to their profile.
-
-The supported receiving methods shall initially be:
-
-### Option A: Bank Transfer
-
-The fundi provides:
-
--   Bank name
--   Account holder name
--   Account number
-
-### Option B: Mobile Money Transfer
-
-The fundi provides:
-
--   Mobile network/provider
--   Registered mobile-money number
--   Account holder name where required
-
-The system shall allow the fundi to:
-
--   Add a payment method.
--   Edit a payment method.
--   Remove a payment method where permitted.
--   Set one payment method as the primary receiving method.
--   View the currently selected receiving method.
-
-Payment details must be securely stored and must not be publicly
-displayed.
-
-The system should require verification of the receiving destination
-where supported by the payment provider.
-
-A fundi should not be eligible to receive a payout until a valid
-receiving payment method has been configured.
-
-------------------------------------------------------------------------
-
-# 10. Location Requirements
-
-Location is one of the core features of FundiBolt.
-
-The system shall collect appropriate location information including:
-
--   Region
--   District
--   Ward
--   Latitude
--   Longitude
--   Service radius
-
-The customer should be able to allow GPS access so that FundiBolt can
-identify nearby fundis.
-
-The search process shall be:
-
-``` text
-Customer Location
-        ↓
-GPS Coordinates
-        ↓
-Selected Service
-        ↓
-Search Available Fundis
-        ↓
-Distance Calculation
-        ↓
-Availability Filter
-        ↓
-Nearby Fundis
-```
-
-The platform should prioritize fundis based on:
-
-1.  Service compatibility
-2.  Distance
-3.  Availability
-4.  Rating
-5.  Completed jobs
-6.  Response performance
-
-The location system shall initially operate within Dar es Salaam.
-
-------------------------------------------------------------------------
-
-# 11. Booking Requirements
-
-The booking system is the core marketplace functionality.
-
-## Customer Booking Process
-
-``` text
-Select Service
       ↓
-Find Nearby Fundis
-      ↓
-Select Fundi
-      ↓
-View Profile
-      ↓
-Describe Problem
-      ↓
-Upload Photos
-      ↓
-Provide Location
-      ↓
-Select Date/Time
-      ↓
-Submit Request
+If Approved → Fundi becomes searchable
 ```
 
-The fundi receives the request and can:
+A "Verified" badge is only shown once an admin has explicitly approved the account.
 
-``` text
-Accept
-   OR
-Reject
-```
+---
 
-If accepted:
+## 8. Revenue Model
 
-``` text
-Booking Accepted
-      ↓
-Fundi Travels to Customer
-      ↓
-Fundi Arrives
-      ↓
-Work Begins
-      ↓
-Work Completed
-      ↓
-Customer Confirms
-      ↓
-Payment
-      ↓
-Rating/Review
-```
+FundiBolt intentionally avoids handling customer-to-fundi service payments in the MVP. This removes the need for split payments, escrow, payout integration, and related regulatory complexity. Revenue comes from two simpler, one-directional payment flows:
 
-------------------------------------------------------------------------
+### 8.1 Fundi Subscription (Primary Revenue)
+- Fundis pay a recurring monthly fee (e.g. TZS 5,000–15,000) to remain listed and searchable.
+- Active subscription → profile visible, can receive bookings.
+- Lapsed subscription → profile hidden from search until renewed.
+- Collected via **ClickPesa** (mobile money + bank collection API).
 
-# 12. Booking Status Requirements
+### 8.2 Customer-Facing Ads (Secondary Revenue)
+- Google AdMob banner/interstitial ads shown to customers within the app.
+- Low revenue at small scale, but scales with active user growth.
+- Optional future upgrade: paid "featured/sponsored fundi" placements in search results (fundi-funded, higher yield than generic ads).
 
-The system shall support:
+**Note:** Customers pay fundis directly for the actual job (cash or mobile money), off-platform. FundiBolt does not process or hold service payment funds in this MVP.
 
-``` text
-PENDING
-ACCEPTED
-REJECTED
-ON_THE_WAY
-ARRIVED
-IN_PROGRESS
-COMPLETED
-CANCELLED
-DISPUTED
-```
-
-Only authorized users shall be able to change booking statuses.
-
-------------------------------------------------------------------------
-
-# 13. Pricing and Quotation Requirements
+---
 
-FundiBolt should initially avoid forcing fixed prices for all services
-because many fundi jobs cannot be accurately priced before inspection.
+## 9. Technology Stack
 
-The preferred process is:
+| Layer | Technology |
+|---|---|
+| Mobile App | React Native (Expo) + TypeScript |
+| Backend API | Node.js + Express + TypeScript |
+| Database | PostgreSQL (Supabase) |
+| Cache / Session / Idempotency | Redis (Upstash) |
+| Payments (subscriptions only) | ClickPesa (collection API) |
+| Ads | Google AdMob (`react-native-google-mobile-ads`) |
+| Backend Hosting | Render (auto-deploy via GitHub) |
+| Admin Dashboard Hosting | Vercel |
+| Build Pipeline | Expo EAS Build (cloud build) |
 
-``` text
-Customer Requests Service
-        ↓
-Fundi Reviews Problem
-        ↓
-Fundi Provides Quotation
-        ↓
-Customer Accepts/Rejects
-        ↓
-Work Begins
-```
+**Why Expo:** development is being done in a minimal Termux/Kali environment, which cannot reliably run native Android build tooling. Expo allows writing and testing app code locally, while EAS Build compiles the production app in the cloud.
 
-Fixed pricing may later be introduced for standardized services.
+---
 
-------------------------------------------------------------------------
+## 10. Build Roadmap
 
-# 14. Payment Requirements
-
-FundiBolt shall support appropriate payment providers and payment
-methods available in Tanzania.
-
-The platform shall support the following conceptual customer payment
-options:
+### Phase 1 — Foundation
+Auth → user roles (customer/fundi/admin) → PostgreSQL schema → base Express API
 
--   Mobile-money payment
--   Bank/payment-provider payment
-
-The exact providers shall be selected during implementation based on
-their APIs, settlement capabilities, fees, compliance requirements, and
-support for marketplace/platform payouts.
-
-------------------------------------------------------------------------
-
-# 15. FundiBolt Commission and Fundi Payout Requirements
-
-FundiBolt shall use a **10% commission model** for the initial
-marketplace.
-
-For every confirmed eligible customer payment:
-
-``` text
-Customer Payment = 100%
+### Phase 2 — Marketplace Core
+Service categories → location model (region/district/ward/lat-long) → fundi search → fundi profiles
 
-FundiBolt Commission = 10%
-
-Fundi Payout = 90%
-```
+### Phase 3 — Booking Flow
+Booking creation → accept/reject → status tracking → notifications
 
-### Example
-
-If the customer pays:
-
-``` text
-TSh 50,000
-```
-
-Then:
-
-``` text
-FundiBolt Commission
-10% × 50,000
-= TSh 5,000
-
-Fundi Payout
-90% × 50,000
-= TSh 45,000
-```
-
-The system shall **not add the full TSh 50,000 to the fundi wallet
-first**.
-
-Instead, the transaction should be split logically at confirmation:
-
-``` text
-Customer Payment
-       │
-       ▼
-Payment Confirmed
-       │
-       ├───────────────┐
-       │               │
-       ▼               ▼
-10% Commission      90% Fundi Amount
-       │               │
-       ▼               ▼
-Admin Wallet /      Fundi Payout
-Commission Ledger   Destination
-       │               │
-       ▼               ▼
-Admin Dashboard     Bank / Mobile Money
-```
-
-The 10% commission shall be recorded as FundiBolt income.
-
-The remaining 90% shall be paid to the fundi's selected and valid
-receiving payment method.
-
-------------------------------------------------------------------------
+### Phase 4 — Communication
+In-app chat tied to a booking
 
-# 16. Important Payment Architecture Requirement
-
-The term **Admin Wallet** should initially be implemented as a
-controlled **platform financial ledger/wallet balance**, not merely as a
-number displayed on the dashboard.
-
-For every transaction, the system should maintain a financial record
-showing:
-
--   Gross payment
--   Platform commission
--   Fundi payable amount
--   Payment provider
--   Customer
--   Fundi
--   Booking
--   Transaction reference
--   Payment status
--   Payout status
--   Commission status
--   Date/time
-
-Example:
-
-``` text
-Transaction
---------------------------------
-Gross Amount:       TSh 50,000
-Commission (10%):   TSh  5,000
-Fundi Amount:       TSh 45,000
-Payment Status:     CONFIRMED
-Commission Status:  RECORDED
-Payout Status:      PAID
-```
-
-This provides an auditable financial history.
-
-------------------------------------------------------------------------
-
-# 17. Admin Wallet and Income Tracking
+### Phase 5 — Trust & Safety
+Fundi verification workflow → ratings & reviews → dispute reporting
 
-The administrator dashboard shall provide financial tracking.
-
-The dashboard should display:
-
-### Today's income
-
-``` text
-Today's Gross Payments
-Today's Commission
-Today's Fundi Payouts
-Today's Refunds
-Today's Net Platform Income
-```
-
-### Other periods
-
--   Daily income
--   Weekly income
--   Monthly income
--   Yearly income
--   Custom date range
-
-### Financial metrics
-
--   Total transaction value
--   Total platform commission
--   Total fundi payouts
--   Pending payouts
--   Successful payouts
--   Failed payouts
--   Refunded payments
--   Disputed payments
-
-Example:
-
-``` text
-ADMIN DASHBOARD
-
-Today's Transactions:      42
-Gross Payments:            TSh 2,100,000
-10% Commission:            TSh   210,000
-Fundi Payouts:             TSh 1,890,000
-Pending Payouts:            TSh   100,000
-Refunds:                    TSh    20,000
-```
-
-The figures must be calculated from actual transaction records rather
-than manually entered values.
-
-------------------------------------------------------------------------
-
-# 18. Admin Bank Settlement Requirement
-
-The business owner/platform must be able to configure an official
-FundiBolt settlement account for receiving the platform's commission.
-
-Conceptually:
-
-``` text
-Customer Payment
-       ↓
-Payment Provider / Marketplace Settlement
-       ↓
-10% FundiBolt Commission
-       ↓
-FundiBolt Settlement Account
-       ↓
-Admin Financial Dashboard
-```
+### Phase 6 — Admin Dashboard
+Fundi verification queue → user/booking monitoring → basic analytics
 
-Where the selected payment provider supports automatic split payments or
-marketplace payouts, the system should use the provider's supported
-settlement mechanism.
+### Phase 7 — Monetization
+ClickPesa subscription billing (fundi side) → AdMob integration (customer side)
 
-If a provider does not support direct split settlement, the backend must
-use the provider's supported collection and payout process rather than
-pretending that money has been transferred when it has not.
+### Phase 8 — Dar es Salaam Pilot Launch
+Recruit 20–50 fundis in 1–2 wards → verify fundis → onboard first customers → collect feedback → iterate → expand coverage
 
-The system must not expose bank credentials, API secrets, or sensitive
-payment information in the mobile application.
+**Launch principle:** the initial MVP can run with fundi listings **free** to prove the marketplace works, before subscription gating is switched on.
 
-**Important implementation requirement:** direct automatic transfers to
-a bank account depend on the selected payment provider's API and
-Tanzanian financial/payment regulations. The final implementation must
-therefore be designed around the provider's approved
-marketplace/collection and payout capabilities.
+---
 
-------------------------------------------------------------------------
+## 11. Business Setup Requirements (parallel to development)
 
-# 19. Payment Confirmation and Idempotency
+- Register company (BRELA)
+- Open business bank account
+- Apply for ClickPesa merchant account (sandbox → production)
+- Confirm ClickPesa KYC/compliance requirements for recurring collection
 
-A payment must only be considered successful after confirmation from the
-payment provider.
+---
 
-The system shall not calculate commission or release a fundi payout
-merely because the customer initiated a payment.
+## 12. Key Business Metrics
 
-The process should be:
+**Marketplace:** registered customers, registered fundis, verified fundis, active fundis, bookings created/completed/cancelled
 
-``` text
-Customer Initiates Payment
-        ↓
-Payment Provider
-        ↓
-Payment Confirmation
-        ↓
-Backend Verifies Transaction
-        ↓
-Transaction Marked CONFIRMED
-        ↓
-10% Commission Recorded
-        ↓
-90% Fundi Payout Created
-        ↓
-Payout Processed
-```
+**Financial:** active subscriptions, subscription revenue, ad revenue, churn rate
 
-The backend must prevent duplicate processing.
+**Quality:** average fundi rating, complaints, disputes, booking acceptance rate, booking completion rate, repeat customers
 
-For example, if the payment provider sends the same confirmation twice,
-the system must not:
+---
 
--   Deduct the 10% commission twice.
--   Pay the fundi twice.
--   Record duplicate income.
+## 13. Acceptance Criteria for Pilot Launch
 
-Each provider transaction must have a unique transaction/reference
-identifier.
+- Customer and fundi can both register successfully
+- Admin can verify fundis
+- Customers can search and find fundis by service + location
+- Customers can submit bookings; fundis can accept/reject
+- Booking status updates correctly through its lifecycle
+- Customers and fundis can chat
+- Fundi subscription payment (ClickPesa) can be collected and verified
+- Lapsed subscriptions correctly hide a fundi from search
+- Customers can rate completed jobs
+- Admin can monitor users, bookings, and subscription revenue
+- Authentication and authorization work correctly across all three roles
 
-------------------------------------------------------------------------
+---
 
-# 20. Fundi Earnings Requirements
+## 14. Features Deliberately Excluded from MVP
 
-The fundi application shall provide an earnings section.
+- Nationwide deployment
+- Split payments / escrow / fundi payouts through the platform
+- AI-based recommendations
+- Loyalty programs
+- Advanced advertising/bidding systems
+- Corporate accounts
+- Automated price prediction or financial forecasting
 
-It should display:
+These may be introduced after the core marketplace proves demand and revenue.
 
--   Total earnings
--   Available balance
--   Pending amount
--   Paid amount
--   Commission deductions
--   Transaction history
--   Payout history
+---
 
-Example:
+## 15. Next Steps
 
-``` text
-FUNDI EARNINGS
-
-Gross Job Payment:      TSh 50,000
-FundiBolt Commission:   TSh  5,000
-Fundi Earnings:         TSh 45,000
-
-Payout Status:          PAID
-```
-
-The system should distinguish between:
-
--   **Pending earnings** --- payment/job still subject to required
-    confirmation.
--   **Available earnings** --- amount eligible for payout.
--   **Paid earnings** --- successfully transferred to the fundi.
-
-------------------------------------------------------------------------
-
-# 21. Rating and Review Requirements
-
-After a completed job, customers should be able to:
-
--   Give a rating.
--   Write a review.
--   Report inappropriate service.
-
-Ratings should contribute to the fundi's overall marketplace reputation.
-
-The system should prevent customers from repeatedly reviewing the same
-completed booking.
-
-------------------------------------------------------------------------
-
-# 22. Communication Requirements
-
-Customers and fundis should be able to communicate after a booking
-request is created.
-
-The system should support:
-
--   Text messages
--   Booking-related notifications
--   Optional image sharing
--   Call initiation
-
-The system should maintain message history associated with the relevant
-users and booking.
-
-------------------------------------------------------------------------
-
-# 23. Notification Requirements
-
-### Customer notifications
-
--   Booking request submitted.
--   Fundi accepted.
--   Fundi rejected.
--   Fundi is on the way.
--   Fundi arrived.
--   Job completed.
--   Payment confirmation.
--   Payout/payment-related updates where relevant.
--   New message.
--   Booking cancellation.
-
-### Fundi notifications
-
--   New booking request.
--   Customer cancelled.
--   Customer accepted quotation.
--   New message.
--   Payment confirmation.
--   Earnings updated.
--   Payout successful/failed.
--   New review.
-
-------------------------------------------------------------------------
-
-# 24. Admin Requirements
-
-The administrator will control the marketplace through a web-based
-dashboard.
-
-## Dashboard
-
-The administrator should see:
-
--   Total customers
--   Total fundis
--   Verified fundis
--   Pending verification
--   Active bookings
--   Completed bookings
--   Cancelled bookings
--   Total transaction value
--   Platform commission
--   Fundi payouts
--   Pending payouts
--   Failed payments
--   Disputes
--   Daily/weekly/monthly income
-
-## User Management
-
-Admin should be able to:
-
--   View customers.
--   View fundis.
--   Search users.
--   Suspend users.
--   Reactivate users.
-
-## Fundi Management
-
-Admin should be able to:
-
--   Review applications.
--   Verify fundis.
--   Reject fundis.
--   Suspend fundis.
--   Manage fundi services.
-
-## Booking Management
-
-Admin should be able to:
-
--   View bookings.
--   Monitor booking status.
--   Investigate cancelled bookings.
--   Handle disputes.
-
-## Payment Management
-
-Admin should be able to:
-
--   View transactions.
--   View commissions.
--   View fundi payouts.
--   View payment status.
--   View payout status.
--   Review failed payments.
--   Review refunds.
--   Export financial reports.
-
-------------------------------------------------------------------------
-
-# 25. Dispute Management
-
-Customers and fundis should have the ability to report problems.
-
-Example:
-
-``` text
-Customer
-   ↓
-Reports Problem
-   ↓
-Dispute Created
-   ↓
-Admin Reviews
-   ↓
-Admin Decision
-   ↓
-Resolution
-```
-
-Possible dispute categories:
-
--   Poor service
--   Payment problem
--   Fundi did not arrive
--   Customer unavailable
--   Incorrect quotation
--   Property damage
--   Other
-
-A disputed transaction should not automatically be released to the fundi
-if the business rules require the payout to be held pending
-investigation.
-
-------------------------------------------------------------------------
-
-# 26. Security Requirements
-
-The system must implement appropriate security controls.
-
-## Authentication
-
--   Secure registration.
--   Secure login.
--   Password hashing.
--   JWT/session security.
--   Secure logout/token handling.
-
-## Authorization
-
-The system must distinguish between:
-
-``` text
-CUSTOMER
-FUNDI
-ADMIN
-```
-
-A customer must not access administrator functions.
-
-A fundi must not access another fundi's private information.
-
-## Payment Security
-
--   Never store raw card/payment credentials unless explicitly required
-    and supported by the payment provider.
--   Store provider transaction references.
--   Protect payment API credentials.
--   Validate payment callbacks/webhooks.
--   Verify payment status server-side.
--   Use idempotency to prevent duplicate transactions.
--   Log financial state changes.
--   Restrict access to financial information.
-
-------------------------------------------------------------------------
-
-# 27. Technical Requirements
-
-A suitable initial architecture is:
-
-``` text
-                 React Native / Expo
-                         │
-                         │ HTTPS
-                         ▼
-                Node.js + Express
-                         │
-             ┌───────────┼───────────┐
-             ▼           ▼           ▼
-         PostgreSQL     Redis      Payment API
-             │
-          Prisma ORM
-```
-
-## Suggested technologies
-
-### Mobile
-
--   React Native
--   Expo
--   TypeScript
--   Expo Router
-
-### Backend
-
--   Node.js
--   Express
--   REST API
-
-### Database
-
--   PostgreSQL
--   Prisma ORM
-
-### Validation
-
--   Zod
-
-### Authentication
-
--   JWT
--   bcrypt
-
-### Caching/realtime
-
--   Redis
--   WebSockets where required
-
-------------------------------------------------------------------------
-
-# 28. Core Financial Data Model
-
-The database should maintain separate records for marketplace
-transactions and payouts.
-
-Recommended core entities include:
-
-``` text
-User
-CustomerProfile
-FundiProfile
-Service
-FundiService
-Booking
-Quotation
-Payment
-Transaction
-Commission
-FundiWallet
-Payout
-PaymentMethod
-Review
-Message
-Notification
-Dispute
-AdminWalletLedger
-```
-
-The financial relationships should follow:
-
-``` text
-Booking
-   │
-   ▼
-Payment
-   │
-   ▼
-Transaction
-   ├── Commission (10%)
-   └── Fundi Payout (90%)
-             │
-             ▼
-       Payment Method
-```
-
-The **AdminWalletLedger** should record platform income and other
-financial movements.
-
-------------------------------------------------------------------------
-
-# 29. Non-Functional Requirements
-
-## Performance
-
-The application should:
-
--   Load major screens quickly.
--   Return search results efficiently.
--   Handle multiple simultaneous users.
--   Avoid unnecessary API requests.
-
-## Availability
-
-The production system should remain available continuously except during
-planned maintenance.
-
-## Scalability
-
-The architecture should allow expansion from:
-
-``` text
-Dar es Salaam
-      ↓
-Other regions
-      ↓
-Tanzania
-```
-
-without requiring a complete rewrite.
-
-## Usability
-
-The interface should:
-
--   Be simple.
--   Use clear Swahili/English terminology as appropriate.
--   Require minimal steps to make a booking.
--   Work effectively on common Android devices.
-
-------------------------------------------------------------------------
-
-# 30. MVP Scope
-
-## Customer
-
--   Registration/login
--   Profile
--   Service selection
--   Location
--   Nearby fundi search
--   Fundi profile
--   Booking
--   Booking status
--   Messaging/contact
--   Payment
--   Booking history
--   Rating/review
-
-## Fundi
-
--   Registration/login
--   Profile
--   Skills
--   Location
--   Availability
--   Verification
--   Booking requests
--   Accept/reject
--   Job status
--   Earnings
--   Payment method setup
--   Payout history
--   Reviews
--   Messaging
-
-## Admin
-
--   Dashboard
--   User management
--   Fundi verification
--   Service management
--   Booking monitoring
--   Payment monitoring
--   Commission management
--   Admin wallet/financial ledger
--   Fundi payout monitoring
--   Dispute management
--   Financial reports
-
-------------------------------------------------------------------------
-
-# 31. Features to Exclude From the First MVP
-
-To avoid making the first version unnecessarily complicated, postpone:
-
--   Nationwide deployment
--   Complex AI recommendations
--   Advanced loyalty programs
--   Fundi subscription plans
--   Advanced advertising
--   Corporate accounts
--   Automated price prediction
--   Advanced financial forecasting
-
-These can be introduced after the core marketplace works.
-
-------------------------------------------------------------------------
-
-# 32. Initial Dar es Salaam Launch Strategy
-
-FundiBolt should initially operate within selected parts of Dar es
-Salaam rather than immediately covering the entire city.
-
-The launch should follow:
-
-``` text
-Build MVP
-    ↓
-Recruit 20–50 fundis
-    ↓
-Verify fundis
-    ↓
-Launch selected service categories
-    ↓
-Recruit first customers
-    ↓
-Complete first bookings
-    ↓
-Process first payments
-    ↓
-Collect feedback
-    ↓
-Improve system
-    ↓
-Expand coverage
-```
-
-The initial goal should be **successful transactions**, not simply
-application downloads.
-
-------------------------------------------------------------------------
-
-# 33. Key Business Metrics
-
-## Marketplace
-
--   Registered customers
--   Registered fundis
--   Verified fundis
--   Active fundis
--   Number of bookings
--   Completed bookings
--   Cancelled bookings
-
-## Financial
-
--   Gross transaction value
--   Total platform commission
--   Total fundi payouts
--   Pending payouts
--   Successful payouts
--   Failed payouts
--   Refunded payments
--   Disputed payments
--   Net platform income
-
-## Quality
-
--   Average fundi rating
--   Customer complaints
--   Disputes
--   Booking acceptance rate
--   Booking completion rate
--   Repeat customers
-
-------------------------------------------------------------------------
-
-# 34. Acceptance Criteria for the First Release
-
-The Dar es Salaam MVP can be considered ready for pilot launch when:
-
--   A customer can register successfully.
--   A fundi can register successfully.
--   Admin can verify fundis.
--   Customers can find fundis based on service and location.
--   Customers can submit bookings.
--   Fundis can accept/reject bookings.
--   Booking statuses work correctly.
--   Customers and fundis can communicate.
--   Fundis can configure a valid bank or mobile-money receiving method.
--   Customers can make payments through the selected payment provider.
--   The backend can verify confirmed payments.
--   Exactly 10% of each confirmed eligible payment is recorded as
-    platform commission.
--   The remaining 90% is recorded as the fundi payable amount.
--   Duplicate payment confirmations cannot create duplicate commissions
-    or payouts.
--   Fundi earnings are updated correctly.
--   Fundi payouts are sent through the supported payment-provider
-    mechanism.
--   Admin can track daily, weekly, monthly, and custom-period income.
--   Customers can rate completed jobs.
--   Admin can monitor transactions and payouts.
--   Authentication and authorization work correctly.
--   Critical payment and application failures are handled appropriately.
-
-------------------------------------------------------------------------
-
-# 35. Final System Workflow
-
-The complete FundiBolt business process should work as follows:
-
-``` text
-                    CUSTOMER
-                       │
-                       ▼
-                 Open FundiBolt
-                       │
-                       ▼
-                Select Service
-                       │
-                       ▼
-                 Share Location
-                       │
-                       ▼
-              Find Nearby Fundis
-                       │
-                       ▼
-                 Select Fundi
-                       │
-                       ▼
-               Request Service
-                       │
-                       ▼
-                     FUNDI
-                       │
-                 Accept Request
-                       │
-                       ▼
-                 Visit Customer
-                       │
-                       ▼
-                  Do the Job
-                       │
-                       ▼
-                Job Completed
-                       │
-                       ▼
-              Customer Confirms
-                       │
-                       ▼
-                    PAYMENT
-                       │
-                       ▼
-              Payment Confirmed
-                       │
-              ┌────────┴────────┐
-              │                 │
-              ▼                 ▼
-        10% Commission      90% Fundi Amount
-              │                 │
-              ▼                 ▼
-     Admin Wallet/Ledger    Fundi Earnings
-              │                 │
-              ▼                 ▼
-      Admin Income Report   Fundi Payment Method
-                                │
-                         ┌──────┴──────┐
-                         ▼             ▼
-                     Bank Transfer  Mobile Money
-                                │
-                                ▼
-                         Payout Completed
-                                │
-                                ▼
-                         Customer Rating
-                                │
-                                ▼
-                         Marketplace Growth
-```
-
-------------------------------------------------------------------------
-
-# 36. Recommended Development Priority
-
-## Phase 1 --- Foundation
-
-Authentication → User roles → Database → Profiles
-
-## Phase 2 --- Marketplace
-
-Services → Location → Fundi search → Fundi profiles
-
-## Phase 3 --- Booking
-
-Requests → Accept/reject → Status tracking → Notifications
-
-## Phase 4 --- Communication
-
-Chat → Call → Booking communication
-
-## Phase 5 --- Payments
-
-Payment provider integration → Payment confirmation → 10% commission →
-90% fundi payout → Transaction ledger
-
-## Phase 6 --- Trust
-
-Fundi verification → Ratings → Reviews → Disputes
-
-## Phase 7 --- Administration
-
-Admin dashboard → Financial dashboard → Wallet/ledger → Payout
-monitoring → Analytics
-
-## Phase 8 --- Dar es Salaam Pilot
-
-Recruit fundis → Recruit customers → First transactions → Feedback →
-Optimization
-
-------------------------------------------------------------------------
-
-# 37. Important Business Rule
-
-The fundamental financial rule for FundiBolt is:
-
-> **For every confirmed eligible customer payment, FundiBolt retains 10%
-> as its platform commission, while 90% becomes payable to the selected
-> fundi through the fundi's registered bank or mobile-money payment
-> method.**
-
-The implementation should treat payment confirmation, commission
-recording, and fundi payout as separate financial states so that every
-transaction can be audited and reconciled.
-
-This document is the baseline requirements specification for the
-**FundiBolt Dar es Salaam marketplace MVP**. New features should be
-checked against this document before being added to the first production
-release.
+1. Register business entity and open ClickPesa sandbox account
+2. Set up Expo project and backend repo (Node/Express/PostgreSQL)
+3. Build Phase 1 (auth + roles) and Phase 2 (marketplace core)
+4. Recruit initial pilot fundis in 1–2 Dar es Salaam wards
+5. Launch free, gather usage data, then enable subscriptions + ads
