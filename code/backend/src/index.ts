@@ -2,8 +2,9 @@ import express from "express";
 import cors from "cors";
 import helmet from "helmet";
 import { env } from "./config/env";
-import { checkDbConnection } from "./config/db";
+import { checkDbConnection } from "./config/prisma";
 import { checkRedisConnection } from "./config/redis";
+import authRoutes from "./routes/auth.routes";
 
 const app = express();
 
@@ -14,7 +15,6 @@ app.use(express.json());
 app.get("/health", async (_req, res) => {
   const dbOk = await checkDbConnection();
   const redisOk = await checkRedisConnection();
-
   const healthy = dbOk && redisOk;
 
   res.status(healthy ? 200 : 503).json({
@@ -28,6 +28,8 @@ app.get("/health", async (_req, res) => {
 app.get("/", (_req, res) => {
   res.json({ message: "FundiBolt API is running" });
 });
+
+app.use("/api/auth", authRoutes);
 
 app.listen(env.port, () => {
   console.log(`FundiBolt backend listening on port ${env.port}`);
