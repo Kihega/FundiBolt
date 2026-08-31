@@ -62,8 +62,8 @@ export default function LoginScreen({ onLoginSuccess, onGoToSignup }: Props) {
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={{ width: "100%", maxWidth: maxContentWidth, alignSelf: "center", padding: spacing.lg }}>
           <View style={{ alignItems: "center", marginBottom: spacing.lg }}>
-            <Image source={require("../../assets/logo.png")} style={styles.logo} resizeMode="contain" />
-            <View style={{ marginTop: spacing.sm }}>
+            <View style={styles.brandRow}>
+              <Image source={require("../../assets/logo.png")} style={styles.logo} resizeMode="contain" />
               <BrandWordmark size={fontSize.xxl} />
             </View>
             <Text
@@ -158,7 +158,8 @@ export default function LoginScreen({ onLoginSuccess, onGoToSignup }: Props) {
 
 const styles = StyleSheet.create({
   scrollContent: { flexGrow: 1 },
-  logo: { width: 64, height: 64 },
+  brandRow: { flexDirection: "row", alignItems: "center" },
+  logo: { width: 44, height: 44, marginRight: 6 },
   dividerRow: { flexDirection: "row", alignItems: "center", marginVertical: 20 },
   dividerLine: { flex: 1, height: 1 },
   toggleRow: { flexDirection: "row", borderWidth: 1, padding: 4, marginBottom: 16 },

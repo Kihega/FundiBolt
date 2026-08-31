@@ -75,7 +75,19 @@ function Root() {
   }
 
   if (screen === "otp") {
-    return <OtpVerificationScreen email={pendingEmail} onVerified={() => setScreen("home")} />;
+    return (
+      <OtpVerificationScreen
+        email={pendingEmail}
+        onVerified={() => {
+          // Verification just confirms the email - it doesn't log the user
+          // in. Drop the signup token and send them to the login screen so
+          // they sign in explicitly with their new credentials.
+          setAuthToken(null);
+          setPendingEmail("");
+          setScreen("login");
+        }}
+      />
+    );
   }
 
   return (

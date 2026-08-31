@@ -94,14 +94,22 @@ export default function WelcomeScreen({ onLogin, onSignup }: Props) {
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={styles.center}>
         <View style={{ width: "100%", maxWidth: maxContentWidth, alignItems: "center" }}>
-          <Animated.Image
-            source={require("../../assets/logo.png")}
-            style={[styles.logo, { opacity: logoOpacity, transform: [{ scale: logoScale }] }]}
-            resizeMode="contain"
-          />
+          {/* Logo now sits inline at the start of the "FundiBolt" wordmark row.
+              The logo keeps its own scale-in entrance and the wordmark keeps
+              its own fade/slide entrance - they're just laid out side by
+              side now instead of stacked. */}
+          <View style={styles.brandRow}>
+            <Animated.Image
+              source={require("../../assets/logo.png")}
+              style={[styles.logo, { opacity: logoOpacity, transform: [{ scale: logoScale }] }]}
+              resizeMode="contain"
+            />
+            <Animated.View style={{ opacity: headlineOpacity, transform: [{ translateY: headlineTranslateY }] }}>
+              <BrandWordmark size={fontSize.display} />
+            </Animated.View>
+          </View>
 
           <Animated.View style={{ opacity: headlineOpacity, transform: [{ translateY: headlineTranslateY }], alignItems: "center" }}>
-            <BrandWordmark size={fontSize.display} />
             <Text
               style={{
                 color: colors.textPrimary,
@@ -154,7 +162,8 @@ export default function WelcomeScreen({ onLogin, onSignup }: Props) {
 const styles = StyleSheet.create({
   container: { flex: 1, justifyContent: "space-between" },
   center: { flex: 1, alignItems: "center", justifyContent: "center", paddingHorizontal: 24, paddingTop: 16 },
-  logo: { width: 140, height: 140, marginBottom: 8 },
+  brandRow: { flexDirection: "row", alignItems: "center", justifyContent: "center" },
+  logo: { width: 56, height: 56, marginRight: 8 },
   card: { flexDirection: "row", alignItems: "center", padding: 14 },
   cardIcon: { width: 40, height: 40, alignItems: "center", justifyContent: "center" },
 });

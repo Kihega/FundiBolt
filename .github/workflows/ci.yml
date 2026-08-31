@@ -1,0 +1,85 @@
+name: CI
+
+# Runs lint + typecheck + tests for both the backend and mobile packages.
+# Triggered on every push to develop (fast feedback while you work) and on
+# every pull request targeting main (the actual merge gate).
+#
+# NOTE: for this to actually block merges, the "Backend checks" and
+# "Mobile checks" jobs need to be marked as required status checks on the
+# `main` branch. That's a one-time manual step in GitHub, not something a
+# workflow file alone can set:
+#   Repo -> Settings -> Branches -> Branch protection rules -> add rule for
+#   "main" -> enable "Require status checks to pass before merging" ->
+#   select "Backend checks" and "Mobile checks".
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [develop]
+
+jobs:
+  backend:
+    name: Backend checks
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: code/backend
+    env:
+      NODE_ENV: test
+      # Placeholder values only - the test suite mocks Prisma/Redis, it
+      # never touches a real database or Redis instance. These exist
+      # purely so config/env.ts's required() checks don't throw during
+      # `npm ci` (which runs `prisma generate` via postinstall).
+      DATABASE_URL: postgresql://test:test@localhost:5432/fundibolt_test
+      DATABASE_URL_DIRECT: postgresql://test:test@localhost:5432/fundibolt_test
+      UPSTASH_REDIS_REST_URL: https://example-test-instance.upstash.io
+      UPSTASH_REDIS_REST_TOKEN: test-token
+      JWT_SECRET: test-jwt-secret
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: code/backend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Type check
+        run: npm run typecheck
+
+      - name: Unit + integration tests
+        run: npm test -- --ci
+
+  mobile:
+    name: Mobile checks
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: code/mobile
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: code/mobile/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Type check
+        run: npm run typecheck
+
+      - name: Unit tests
+        run: npm test -- --ci
