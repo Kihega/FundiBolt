@@ -54,7 +54,9 @@ export default function OtpInput({ length = 6, onChange }: Props) {
       {values.map((val, i) => (
         <TextInput
           key={i}
-          ref={(ref) => (inputs.current[i] = ref)}
+          ref={(ref) => {
+            inputs.current[i] = ref;
+          }}
           value={val}
           onChangeText={(t) => handleChange(t, i)}
           onKeyPress={(e) => handleKeyPress(e, i)}
