@@ -1,23 +1,44 @@
 import React, { useEffect, useRef } from "react";
-import { View, Image, Text, Animated, StyleSheet, SafeAreaView, Easing } from "react-native";
+import { View, Image, Text, Animated, TouchableOpacity, StyleSheet, SafeAreaView, Easing } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useTheme } from "../theme/ThemeContext";
 import { useResponsive } from "../theme/responsive";
-import GradientButton from "../components/GradientButton";
 import BrandWordmark from "../components/BrandWordmark";
+import type { SignupRole } from "./SignupScreen";
 
 type Props = {
   onLogin: () => void;
-  onSignup: () => void;
+  onSignup: (role: SignupRole) => void;
 };
 
-const FEATURES: { icon: keyof typeof Ionicons.glyphMap; title: string; body: string }[] = [
-  { icon: "shield-checkmark-outline", title: "Verified Fundis", body: "Every fundi is reviewed and approved before they can accept jobs." },
-  { icon: "flash-outline", title: "Fast Booking", body: "Find and book a nearby fundi in minutes, not days." },
-  { icon: "chatbubbles-outline", title: "Direct Chat", body: "Message your fundi directly to sort out job details before they arrive." },
+const ROLE_OPTIONS: { role: SignupRole; icon: keyof typeof Ionicons.glyphMap; title: string; body: string }[] = [
+  {
+    role: "fundi",
+    icon: "construct-outline",
+    title: "Register as Technician",
+    body: "List your skills and start getting booked for plumbing, electrical, and other jobs near you.",
+  },
+  {
+    role: "customer",
+    icon: "home-outline",
+    title: "Register as Customer",
+    body: "Find and book verified, trusted technicians for jobs around your home, fast.",
+  },
 ];
 
-function AnimatedCard({ icon, title, body, delay }: { icon: keyof typeof Ionicons.glyphMap; title: string; body: string; delay: number }) {
+function RoleCard({
+  icon,
+  title,
+  body,
+  delay,
+  onPress,
+}: {
+  icon: keyof typeof Ionicons.glyphMap;
+  title: string;
+  body: string;
+  delay: number;
+  onPress: () => void;
+}) {
   const { colors, fontFamily, fontSize, spacing, radius } = useTheme();
   const opacity = useRef(new Animated.Value(0)).current;
   const translateY = useRef(new Animated.Value(16)).current;
@@ -33,29 +54,25 @@ function AnimatedCard({ icon, title, body, delay }: { icon: keyof typeof Ionicon
   }, []);
 
   return (
-    <Animated.View
-      style={[
-        styles.card,
-        {
-          backgroundColor: colors.surface,
-          borderRadius: radius.md,
-          opacity,
-          transform: [{ translateY }],
-          marginTop: spacing.sm,
-        },
-      ]}
-    >
-      <View style={[styles.cardIcon, { backgroundColor: colors.surfaceElevated, borderRadius: radius.full }]}>
-        <Ionicons name={icon} size={20} color={colors.primary} />
-      </View>
-      <View style={{ flex: 1, marginLeft: 12 }}>
-        <Text style={{ color: colors.textPrimary, fontFamily: fontFamily.bodySemiBold, fontSize: fontSize.base }}>
-          {title}
-        </Text>
-        <Text style={{ color: colors.textSecondary, fontFamily: fontFamily.bodyRegular, fontSize: fontSize.sm, marginTop: 2 }}>
-          {body}
-        </Text>
-      </View>
+    <Animated.View style={{ opacity, transform: [{ translateY }], marginTop: spacing.sm }}>
+      <TouchableOpacity
+        activeOpacity={0.8}
+        onPress={onPress}
+        style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border, borderRadius: radius.md }]}
+      >
+        <View style={[styles.cardIcon, { backgroundColor: colors.surfaceElevated, borderRadius: radius.full }]}>
+          <Ionicons name={icon} size={24} color={colors.primary} />
+        </View>
+        <View style={{ flex: 1, marginLeft: 14 }}>
+          <Text style={{ color: colors.textPrimary, fontFamily: fontFamily.bodySemiBold, fontSize: fontSize.base }}>
+            {title}
+          </Text>
+          <Text style={{ color: colors.textSecondary, fontFamily: fontFamily.bodyRegular, fontSize: fontSize.sm, marginTop: 4, lineHeight: 18 }}>
+            {body}
+          </Text>
+        </View>
+        <Ionicons name="chevron-forward" size={20} color={colors.textMuted} style={{ marginLeft: 8 }} />
+      </TouchableOpacity>
     </Animated.View>
   );
 }
@@ -68,7 +85,7 @@ export default function WelcomeScreen({ onLogin, onSignup }: Props) {
   const logoScale = useRef(new Animated.Value(0.75)).current;
   const headlineOpacity = useRef(new Animated.Value(0)).current;
   const headlineTranslateY = useRef(new Animated.Value(12)).current;
-  const buttonsOpacity = useRef(new Animated.Value(0)).current;
+  const linkOpacity = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     Animated.parallel([
@@ -86,7 +103,7 @@ export default function WelcomeScreen({ onLogin, onSignup }: Props) {
 
     Animated.sequence([
       Animated.delay(900),
-      Animated.timing(buttonsOpacity, { toValue: 1, duration: 500, useNativeDriver: true }),
+      Animated.timing(linkOpacity, { toValue: 1, duration: 500, useNativeDriver: true }),
     ]).start();
   }, []);
 
@@ -94,7 +111,7 @@ export default function WelcomeScreen({ onLogin, onSignup }: Props) {
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={styles.center}>
         <View style={{ width: "100%", maxWidth: maxContentWidth, alignItems: "center" }}>
-          {/* Logo now sits inline at the start of the "FundiBolt" wordmark row.
+          {/* Logo sits inline at the start of the "FundiBolt" wordmark row.
               The logo keeps its own scale-in entrance and the wordmark keeps
               its own fade/slide entrance - they're just laid out side by
               side now instead of stacked. */}
@@ -119,7 +136,7 @@ export default function WelcomeScreen({ onLogin, onSignup }: Props) {
                 textAlign: "center",
               }}
             >
-              Find trusted local fundis,{"\n"}fast.
+              Find trusted local technicians,{"\n"}fast.
             </Text>
             <Text
               style={{
@@ -130,40 +147,44 @@ export default function WelcomeScreen({ onLogin, onSignup }: Props) {
                 textAlign: "center",
               }}
             >
-              Verified plumbers, electricians, and more - just around the corner.
+              Tell us which one you are, so we can set up the right dashboard for you.
             </Text>
           </Animated.View>
 
           <View style={{ width: "100%", marginTop: spacing.xl }}>
-            {FEATURES.map((f, i) => (
-              <AnimatedCard key={f.title} icon={f.icon} title={f.title} body={f.body} delay={400 + i * 150} />
+            {ROLE_OPTIONS.map((option, i) => (
+              <RoleCard
+                key={option.role}
+                icon={option.icon}
+                title={option.title}
+                body={option.body}
+                delay={400 + i * 150}
+                onPress={() => onSignup(option.role)}
+              />
             ))}
           </View>
+
+          {/* Sign-in link now sits just below the cards as part of the same
+              centered content group, instead of being pinned to the very
+              bottom of the screen. */}
+          <Animated.View style={{ opacity: linkOpacity, marginTop: spacing.md }}>
+            <TouchableOpacity onPress={onLogin} style={{ alignItems: "center" }}>
+              <Text style={{ color: colors.textSecondary, fontFamily: fontFamily.bodyRegular, fontSize: fontSize.sm }}>
+                Already have an account? <Text style={{ color: colors.primary, fontFamily: fontFamily.bodySemiBold }}>Sign in</Text>
+              </Text>
+            </TouchableOpacity>
+          </Animated.View>
         </View>
       </View>
-
-      <Animated.View
-        style={{
-          opacity: buttonsOpacity,
-          width: "100%",
-          maxWidth: maxContentWidth,
-          alignSelf: "center",
-          paddingHorizontal: spacing.lg,
-          paddingBottom: spacing.lg,
-        }}
-      >
-        <GradientButton label="Log in" onPress={onLogin} />
-        <GradientButton label="Create Account" onPress={onSignup} variant="outline" style={{ marginTop: spacing.sm }} />
-      </Animated.View>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, justifyContent: "space-between" },
-  center: { flex: 1, alignItems: "center", justifyContent: "center", paddingHorizontal: 24, paddingTop: 16 },
+  container: { flex: 1 },
+  center: { flex: 1, alignItems: "center", justifyContent: "center", paddingHorizontal: 24, paddingTop: 16, paddingBottom: 16 },
   brandRow: { flexDirection: "row", alignItems: "center", justifyContent: "center" },
   logo: { width: 56, height: 56, marginRight: 8 },
-  card: { flexDirection: "row", alignItems: "center", padding: 14 },
-  cardIcon: { width: 40, height: 40, alignItems: "center", justifyContent: "center" },
+  card: { flexDirection: "row", alignItems: "center", padding: 16, borderWidth: 1 },
+  cardIcon: { width: 48, height: 48, alignItems: "center", justifyContent: "center" },
 });

@@ -22,15 +22,23 @@ import SocialButton from "../components/SocialButton";
 import Checkbox from "../components/Checkbox";
 import BrandWordmark from "../components/BrandWordmark";
 
+export type SignupRole = "customer" | "fundi";
+
 type Props = {
+  role: SignupRole;
   onSignupSuccess: (params: { token: string; email: string }) => void;
   onGoToLogin: () => void;
 };
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL || "http://localhost:4000";
 
-export default function SignupScreen({ onSignupSuccess, onGoToLogin }: Props) {
-  const { colors, fontFamily, fontSize, spacing } = useTheme();
+const ROLE_LABELS: Record<SignupRole, string> = {
+  customer: "Customer",
+  fundi: "Technician",
+};
+
+export default function SignupScreen({ role, onSignupSuccess, onGoToLogin }: Props) {
+  const { colors, fontFamily, fontSize, spacing, radius } = useTheme();
   const { maxContentWidth } = useResponsive();
 
   const [fullName, setFullName] = useState("");
@@ -79,7 +87,7 @@ export default function SignupScreen({ onSignupSuccess, onGoToLogin }: Props) {
       const res = await fetch(`${API_URL}/api/auth/signup`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ fullName, email, phone: `+255${phone}`, password }),
+        body: JSON.stringify({ fullName, email, phone: `+255${phone}`, password, role }),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -139,6 +147,11 @@ export default function SignupScreen({ onSignupSuccess, onGoToLogin }: Props) {
             >
               Enter your Register information
             </Text>
+            <View style={[styles.roleBadge, { backgroundColor: colors.surfaceElevated, borderRadius: radius.full, marginTop: spacing.sm }]}>
+              <Text style={{ color: colors.primary, fontFamily: fontFamily.bodySemiBold, fontSize: fontSize.xs }}>
+                Signing up as {ROLE_LABELS[role]}
+              </Text>
+            </View>
           </View>
 
           {/* Only this middle section scrolls - the input fields and their labels */}
@@ -207,6 +220,7 @@ const styles = StyleSheet.create({
   page: { flex: 1 },
   brandRow: { flexDirection: "row", alignItems: "center" },
   logo: { width: 44, height: 44, marginRight: 6 },
+  roleBadge: { paddingHorizontal: 14, paddingVertical: 6 },
   scrollRegion: { flex: 1 },
   scrollContent: { paddingVertical: 4 },
   dividerRow: { flexDirection: "row", alignItems: "center", marginVertical: 20 },

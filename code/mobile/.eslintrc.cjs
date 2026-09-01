@@ -11,7 +11,7 @@ module.exports = {
   env: {
     es2020: true,
     node: true,
-    "jest/globals": true,
+    jest: true,
   },
   ignorePatterns: ["node_modules", ".expo", "dist", "web-build"],
   rules: {

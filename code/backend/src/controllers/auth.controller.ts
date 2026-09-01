@@ -3,8 +3,19 @@ import { prisma } from "../config/prisma";
 import { hashPassword, comparePassword } from "../utils/password";
 import { signToken } from "../utils/jwt";
 
+// Only these two roles are self-selectable at signup. "admin" is
+// intentionally excluded here so a crafted request body can't grant an
+// account admin privileges - admin accounts must be created some other,
+// non-public way.
+const SELF_SIGNUP_ROLES = ["customer", "fundi"] as const;
+type SelfSignupRole = (typeof SELF_SIGNUP_ROLES)[number];
+
+function normalizeSignupRole(role: unknown): SelfSignupRole {
+  return (SELF_SIGNUP_ROLES as readonly unknown[]).includes(role) ? (role as SelfSignupRole) : "customer";
+}
+
 export async function signup(req: Request, res: Response) {
-  const { fullName, email, phone, password } = req.body;
+  const { fullName, email, phone, password, role } = req.body;
 
   if (!fullName || !email || !password) {
     return res.status(400).json({ message: "fullName, email, and password are required." });
@@ -12,6 +23,8 @@ export async function signup(req: Request, res: Response) {
   if (password.length < 6) {
     return res.status(400).json({ message: "Password must be at least 6 characters." });
   }
+
+  const signupRole = normalizeSignupRole(role);
 
   try {
     const existing = await prisma.user.findFirst({
@@ -24,7 +37,7 @@ export async function signup(req: Request, res: Response) {
     const passwordHash = await hashPassword(password);
 
     const user = await prisma.user.create({
-      data: { fullName, email, phone: phone || null, passwordHash },
+      data: { fullName, email, phone: phone || null, passwordHash, role: signupRole },
       select: { id: true, fullName: true, email: true, phone: true, role: true, emailVerified: true, createdAt: true },
     });
 
