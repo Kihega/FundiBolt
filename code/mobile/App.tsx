@@ -7,7 +7,7 @@ import { ThemeProvider } from "./src/theme/ThemeContext";
 import SplashScreen from "./src/screens/SplashScreen";
 import WelcomeScreen from "./src/screens/WelcomeScreen";
 import LoginScreen from "./src/screens/LoginScreen";
-import SignupScreen from "./src/screens/SignupScreen";
+import SignupScreen, { SignupRole } from "./src/screens/SignupScreen";
 import OtpVerificationScreen from "./src/screens/OtpVerificationScreen";
 import HomeScreen from "./src/screens/HomeScreen";
 
@@ -19,6 +19,7 @@ function Root() {
   const [screen, setScreen] = useState<Screen>("splash");
   const [authToken, setAuthToken] = useState<string | null>(null);
   const [pendingEmail, setPendingEmail] = useState<string>("");
+  const [pendingRole, setPendingRole] = useState<SignupRole>("customer");
 
   const [fontsLoaded] = useFonts({
     Inter_400Regular,
@@ -46,7 +47,15 @@ function Root() {
   }
 
   if (screen === "welcome") {
-    return <WelcomeScreen onLogin={() => setScreen("login")} onSignup={() => setScreen("signup")} />;
+    return (
+      <WelcomeScreen
+        onLogin={() => setScreen("login")}
+        onSignup={(role) => {
+          setPendingRole(role);
+          setScreen("signup");
+        }}
+      />
+    );
   }
 
   if (screen === "login") {
@@ -56,7 +65,7 @@ function Root() {
           setAuthToken(token);
           setScreen("home");
         }}
-        onGoToSignup={() => setScreen("signup")}
+        onGoToSignup={() => setScreen("welcome")}
       />
     );
   }
@@ -64,6 +73,7 @@ function Root() {
   if (screen === "signup") {
     return (
       <SignupScreen
+        role={pendingRole}
         onSignupSuccess={({ token, email }) => {
           setAuthToken(token);
           setPendingEmail(email);
@@ -75,7 +85,19 @@ function Root() {
   }
 
   if (screen === "otp") {
-    return <OtpVerificationScreen email={pendingEmail} onVerified={() => setScreen("home")} />;
+    return (
+      <OtpVerificationScreen
+        email={pendingEmail}
+        onVerified={() => {
+          // Verification just confirms the email - it doesn't log the user
+          // in. Drop the signup token and send them to the login screen so
+          // they sign in explicitly with their new credentials.
+          setAuthToken(null);
+          setPendingEmail("");
+          setScreen("login");
+        }}
+      />
+    );
   }
 
   return (

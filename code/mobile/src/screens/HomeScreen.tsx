@@ -9,9 +9,9 @@ type Props = {
 };
 
 const PLACEHOLDER_CARDS: { icon: keyof typeof Ionicons.glyphMap; title: string; body: string }[] = [
-  { icon: "search-outline", title: "Find a Fundi", body: "Search coming in the next build - fundi search & profiles." },
+  { icon: "search-outline", title: "Find a Technician", body: "Search coming in the next build - technician search & profiles." },
   { icon: "calendar-outline", title: "My Bookings", body: "Your upcoming and past bookings will show up here." },
-  { icon: "chatbubbles-outline", title: "Messages", body: "Chat with fundis about your job details." },
+  { icon: "chatbubbles-outline", title: "Messages", body: "Chat with technicians about your job details." },
   { icon: "person-outline", title: "Profile", body: "Manage your account details and preferences." },
 ];
 
@@ -41,7 +41,7 @@ export default function HomeScreen({ onLogout }: Props) {
           </View>
 
           <Text style={{ color: colors.textSecondary, fontFamily: fontFamily.bodyRegular, fontSize: fontSize.base, marginBottom: spacing.lg }}>
-            You're signed in. This is a placeholder dashboard - the real fundi search, bookings, and chat screens are next on the roadmap.
+            You're signed in. This is a placeholder dashboard - the real technician search, bookings, and chat screens are next on the roadmap.
           </Text>
 
           {PLACEHOLDER_CARDS.map((card) => (

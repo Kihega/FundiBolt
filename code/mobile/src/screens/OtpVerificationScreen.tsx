@@ -5,6 +5,7 @@ import { useResponsive } from "../theme/responsive";
 import OtpInput from "../components/OtpInput";
 import GradientButton from "../components/GradientButton";
 import BrandWordmark from "../components/BrandWordmark";
+import SuccessModal from "../components/SuccessModal";
 
 type Props = {
   email: string;
@@ -13,6 +14,7 @@ type Props = {
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL || "http://localhost:4000";
 const RESEND_COOLDOWN = 30;
+const OTP_LENGTH = 6;
 
 export default function OtpVerificationScreen({ email, onVerified }: Props) {
   const { colors, fontFamily, fontSize, spacing } = useTheme();
@@ -22,6 +24,7 @@ export default function OtpVerificationScreen({ email, onVerified }: Props) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [cooldown, setCooldown] = useState(0);
+  const [showSuccess, setShowSuccess] = useState(false);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
@@ -64,7 +67,7 @@ export default function OtpVerificationScreen({ email, onVerified }: Props) {
 
   async function handleVerify() {
     setError("");
-    if (code.length !== 4 && code !== "123456") {
+    if (code.length !== OTP_LENGTH) {
       setError("Enter the code.");
       return;
     }
@@ -80,7 +83,7 @@ export default function OtpVerificationScreen({ email, onVerified }: Props) {
         setError(data.message || "Invalid or expired code.");
         return;
       }
-      onVerified();
+      setShowSuccess(true);
     } catch (e) {
       setError("Network error. Check your connection and try again.");
     } finally {
@@ -92,8 +95,8 @@ export default function OtpVerificationScreen({ email, onVerified }: Props) {
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>
       <View style={{ flex: 1, width: "100%", maxWidth: maxContentWidth, alignSelf: "center", padding: spacing.lg, justifyContent: "center" }}>
         <View style={{ alignItems: "center", marginBottom: spacing.xl }}>
-          <Image source={require("../../assets/logo.png")} style={styles.logo} resizeMode="contain" />
-          <View style={{ marginTop: spacing.sm }}>
+          <View style={styles.brandRow}>
+            <Image source={require("../../assets/logo.png")} style={styles.logo} resizeMode="contain" />
             <BrandWordmark size={fontSize.xxl} />
           </View>
           <Text
@@ -117,14 +120,9 @@ export default function OtpVerificationScreen({ email, onVerified }: Props) {
           >
             Please enter the code we just sent to{"\n"}{email}
           </Text>
-          {__DEV__ && (
-            <Text style={{ color: colors.warning, fontFamily: fontFamily.bodyRegular, fontSize: fontSize.xs, marginTop: 8 }}>
-              Dev tip: code 123456 always works (non-production only)
-            </Text>
-          )}
         </View>
 
-        <OtpInput length={4} onChange={setCode} />
+        <OtpInput length={OTP_LENGTH} onChange={setCode} />
 
         {!!error && (
           <Text style={{ color: colors.error, fontFamily: fontFamily.bodyRegular, fontSize: fontSize.sm, marginTop: spacing.md, textAlign: "center" }}>
@@ -143,10 +141,22 @@ export default function OtpVerificationScreen({ email, onVerified }: Props) {
 
         <GradientButton label="Verify" onPress={handleVerify} loading={loading} style={{ marginTop: spacing.xl }} />
       </View>
+
+      <SuccessModal
+        visible={showSuccess}
+        title="Success!"
+        message="Your account was successfully created. Now you can log in with your username and password."
+        buttonLabel="OK"
+        onClose={() => {
+          setShowSuccess(false);
+          onVerified();
+        }}
+      />
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  logo: { width: 56, height: 56 },
+  brandRow: { flexDirection: "row", alignItems: "center" },
+  logo: { width: 44, height: 44, marginRight: 6 },
 });

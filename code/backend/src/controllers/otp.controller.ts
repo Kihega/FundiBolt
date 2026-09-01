@@ -3,14 +3,9 @@ import { redis } from "../config/redis";
 import { generateOtp } from "../utils/otp";
 import { sendOtpEmail } from "../config/email";
 import { prisma } from "../config/prisma";
-import { env } from "../config/env";
 
 const OTP_TTL_SECONDS = 5 * 60;
 const RESEND_COOLDOWN_SECONDS = 30;
-
-// Dev-only bypass so the flow can be tested without a real email provider
-// configured. Automatically disabled in production.
-const DEV_BYPASS_CODE = env.nodeEnv !== "production" ? "123456" : null;
 
 function otpKey(email: string) {
   return `otp:${email.toLowerCase()}`;
@@ -31,7 +26,7 @@ export async function sendOtp(req: Request, res: Response) {
       return res.status(429).json({ message: "Please wait before requesting another code." });
     }
 
-    const code = generateOtp(4);
+    const code = generateOtp(6);
     await redis.set(otpKey(email), code, { ex: OTP_TTL_SECONDS });
     await redis.set(cooldownKey(email), "1", { ex: RESEND_COOLDOWN_SECONDS });
 
@@ -56,16 +51,13 @@ export async function verifyOtp(req: Request, res: Response) {
 
   try {
     const stored = await redis.get<string>(otpKey(email));
-    const isDevBypass = DEV_BYPASS_CODE !== null && code === DEV_BYPASS_CODE;
-    const isValid = isDevBypass || (!!stored && stored === code);
+    const isValid = !!stored && stored === code;
 
     if (!isValid) {
       return res.status(400).json({ message: "Invalid or expired code." });
     }
 
-    if (stored) {
-      await redis.del(otpKey(email));
-    }
+    await redis.del(otpKey(email));
 
     await prisma.user.update({
       where: { email },
