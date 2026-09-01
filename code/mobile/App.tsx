@@ -10,6 +10,8 @@ import LoginScreen from "./src/screens/LoginScreen";
 import SignupScreen, { SignupRole } from "./src/screens/SignupScreen";
 import OtpVerificationScreen from "./src/screens/OtpVerificationScreen";
 import HomeScreen from "./src/screens/HomeScreen";
+import CustomerHomeScreen from "./src/screens/CustomerHomeScreen";
+import { AuthUser } from "./src/types/user";
 
 SplashScreenNative.preventAutoHideAsync();
 
@@ -18,6 +20,7 @@ type Screen = "splash" | "welcome" | "login" | "signup" | "otp" | "home";
 function Root() {
   const [screen, setScreen] = useState<Screen>("splash");
   const [authToken, setAuthToken] = useState<string | null>(null);
+  const [authUser, setAuthUser] = useState<AuthUser | null>(null);
   const [pendingEmail, setPendingEmail] = useState<string>("");
   const [pendingRole, setPendingRole] = useState<SignupRole>("customer");
 
@@ -61,8 +64,9 @@ function Root() {
   if (screen === "login") {
     return (
       <LoginScreen
-        onLoginSuccess={(token) => {
+        onLoginSuccess={({ token, user }) => {
           setAuthToken(token);
+          setAuthUser(user);
           setScreen("home");
         }}
         onGoToSignup={() => setScreen("welcome")}
@@ -100,15 +104,22 @@ function Root() {
     );
   }
 
-  return (
-    <HomeScreen
-      onLogout={() => {
-        setAuthToken(null);
-        setPendingEmail("");
-        setScreen("welcome");
-      }}
-    />
-  );
+  const handleLogout = () => {
+    setAuthToken(null);
+    setAuthUser(null);
+    setPendingEmail("");
+    setScreen("welcome");
+  };
+
+  // Role-based home routing. Only the customer dashboard is built this
+  // sprint - fundi (technician) and admin each get their own home screen in
+  // a later sprint (admin's is a separate web dashboard entirely, per the
+  // product plan). Both fall back to the generic placeholder for now.
+  if (authUser?.role === "customer" && authToken) {
+    return <CustomerHomeScreen user={authUser} token={authToken} onLogout={handleLogout} />;
+  }
+
+  return <HomeScreen onLogout={handleLogout} />;
 }
 
 export default function App() {

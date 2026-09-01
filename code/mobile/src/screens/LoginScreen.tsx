@@ -8,9 +8,10 @@ import GradientButton from "../components/GradientButton";
 import SocialButton from "../components/SocialButton";
 import Checkbox from "../components/Checkbox";
 import BrandWordmark from "../components/BrandWordmark";
+import { AuthUser } from "../types/user";
 
 type Props = {
-  onLoginSuccess: (token: string) => void;
+  onLoginSuccess: (params: { token: string; user: AuthUser }) => void;
   onGoToSignup: () => void;
 };
 
@@ -49,7 +50,7 @@ export default function LoginScreen({ onLoginSuccess, onGoToSignup }: Props) {
         setError(data.message || "Login failed.");
         return;
       }
-      onLoginSuccess(data.token);
+      onLoginSuccess({ token: data.token, user: data.user });
     } catch (e) {
       setError("Network error. Check your connection and try again.");
     } finally {
