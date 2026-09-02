@@ -7,21 +7,23 @@ type Props = {
   label: string;
   onPress: () => void;
   loading?: boolean;
+  disabled?: boolean;
   variant?: "primary" | "outline";
   style?: ViewStyle;
 };
 
-export default function GradientButton({ label, onPress, loading, variant = "primary", style }: Props) {
+export default function GradientButton({ label, onPress, loading, disabled, variant = "primary", style }: Props) {
   const { colors, fontFamily, fontSize, radius, spacing } = useTheme();
+  const isDisabled = !!disabled || !!loading;
 
   if (variant === "outline") {
     return (
       <TouchableOpacity
         onPress={onPress}
-        disabled={loading}
+        disabled={isDisabled}
         style={[
           styles.outlineButton,
-          { borderColor: colors.border, borderRadius: radius.md, paddingVertical: spacing.md },
+          { borderColor: colors.border, borderRadius: radius.md, paddingVertical: spacing.md, opacity: isDisabled ? 0.5 : 1 },
           style,
         ]}
       >
@@ -37,7 +39,7 @@ export default function GradientButton({ label, onPress, loading, variant = "pri
   }
 
   return (
-    <TouchableOpacity onPress={onPress} disabled={loading} activeOpacity={0.85} style={style}>
+    <TouchableOpacity onPress={onPress} disabled={isDisabled} activeOpacity={0.85} style={[{ opacity: isDisabled ? 0.5 : 1 }, style]}>
       <LinearGradient
         colors={[colors.primary, colors.primaryDark]}
         start={{ x: 0, y: 0 }}

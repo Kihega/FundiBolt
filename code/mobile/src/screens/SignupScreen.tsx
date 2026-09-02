@@ -26,7 +26,7 @@ export type SignupRole = "customer" | "fundi";
 
 type Props = {
   role: SignupRole;
-  onSignupSuccess: (params: { token: string; email: string }) => void;
+  onSignupSuccess: (params: { email: string }) => void;
   onGoToLogin: () => void;
 };
 
@@ -68,9 +68,16 @@ export default function SignupScreen({ role, onSignupSuccess, onGoToLogin }: Pro
     ]).start();
   }, []);
 
+  // Live feedback as soon as both fields have content, rather than only on
+  // submit - so a mismatch is visible while the person is still typing.
+  const passwordsMismatch = confirmPassword.length > 0 && password !== confirmPassword;
+
+  const allFieldsFilled = !!(fullName && email && phone && password && confirmPassword);
+  const canSubmit = allFieldsFilled && !passwordsMismatch && agreed;
+
   async function handleRegister() {
     setError("");
-    if (!fullName || !email || !phone || !password || !confirmPassword) {
+    if (!allFieldsFilled) {
       setError("Please fill in all fields.");
       return;
     }
@@ -95,13 +102,11 @@ export default function SignupScreen({ role, onSignupSuccess, onGoToLogin }: Pro
         return;
       }
 
-      await fetch(`${API_URL}/api/otp/send`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
-      });
-
-      onSignupSuccess({ token: data.token, email });
+      // The backend already sent the first OTP as part of /api/auth/signup -
+      // no separate /api/otp/send call needed here anymore. The account
+      // itself isn't created yet either; that only happens once the OTP is
+      // verified (see OtpVerificationScreen).
+      onSignupSuccess({ email });
     } catch (e) {
       setError("Network error. Check your connection and try again.");
     } finally {
@@ -169,6 +174,11 @@ export default function SignupScreen({ role, onSignupSuccess, onGoToLogin }: Pro
                 <InputField label="Password" icon="lock-closed-outline" placeholder="Enter Password" isPassword value={password} onChangeText={setPassword} />
                 <PasswordStrengthMeter password={password} />
                 <InputField label="Confirm Password" icon="lock-closed-outline" placeholder="Confirm Password" isPassword value={confirmPassword} onChangeText={setConfirmPassword} />
+                {passwordsMismatch && (
+                  <Text style={{ color: colors.error, fontFamily: fontFamily.bodyRegular, fontSize: fontSize.xs, marginTop: -8, marginBottom: 8 }}>
+                    Passwords do not match.
+                  </Text>
+                )}
               </ScrollView>
             </Animated.View>
           </View>
@@ -191,7 +201,13 @@ export default function SignupScreen({ role, onSignupSuccess, onGoToLogin }: Pro
               </Text>
             )}
 
-            <GradientButton label="Register" onPress={handleRegister} loading={loading} style={{ marginTop: spacing.lg }} />
+            <GradientButton
+              label="Register"
+              onPress={handleRegister}
+              loading={loading}
+              disabled={!canSubmit}
+              style={{ marginTop: spacing.lg }}
+            />
 
             <View style={styles.dividerRow}>
               <View style={[styles.dividerLine, { backgroundColor: colors.border }]} />

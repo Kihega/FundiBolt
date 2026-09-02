@@ -78,8 +78,7 @@ function Root() {
     return (
       <SignupScreen
         role={pendingRole}
-        onSignupSuccess={({ token, email }) => {
-          setAuthToken(token);
+        onSignupSuccess={({ email }) => {
           setPendingEmail(email);
           setScreen("otp");
         }}
@@ -92,11 +91,11 @@ function Root() {
     return (
       <OtpVerificationScreen
         email={pendingEmail}
+        onBack={() => setScreen("signup")}
         onVerified={() => {
-          // Verification just confirms the email - it doesn't log the user
-          // in. Drop the signup token and send them to the login screen so
-          // they sign in explicitly with their new credentials.
-          setAuthToken(null);
+          // Verification is what actually creates the account now (see
+          // auth.controller.ts / otp.controller.ts) - there's no token to
+          // hold onto here, just send them to Login to sign in for real.
           setPendingEmail("");
           setScreen("login");
         }}
