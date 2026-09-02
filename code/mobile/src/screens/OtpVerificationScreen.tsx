@@ -10,13 +10,14 @@ import SuccessModal from "../components/SuccessModal";
 type Props = {
   email: string;
   onVerified: () => void;
+  onBack: () => void;
 };
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL || "http://localhost:4000";
 const RESEND_COOLDOWN = 30;
 const OTP_LENGTH = 6;
 
-export default function OtpVerificationScreen({ email, onVerified }: Props) {
+export default function OtpVerificationScreen({ email, onVerified, onBack }: Props) {
   const { colors, fontFamily, fontSize, spacing } = useTheme();
   const { maxContentWidth } = useResponsive();
 
@@ -120,6 +121,17 @@ export default function OtpVerificationScreen({ email, onVerified }: Props) {
           >
             Please enter the code we just sent to{"\n"}{email}
           </Text>
+          <Text
+            style={{
+              color: colors.textMuted,
+              fontFamily: fontFamily.bodyRegular,
+              fontSize: fontSize.xs,
+              marginTop: 8,
+              textAlign: "center",
+            }}
+          >
+            The code expires in 5 minutes. Didn't get it in time? Use Resend below.
+          </Text>
         </View>
 
         <OtpInput length={OTP_LENGTH} onChange={setCode} />
@@ -130,6 +142,20 @@ export default function OtpVerificationScreen({ email, onVerified }: Props) {
           </Text>
         )}
 
+        {/* Back lets the person return to Signup to fix a typo'd email or
+            other field; Verify submits the code. Placed right after the
+            input boxes so both next steps are immediately visible. */}
+        <View style={{ flexDirection: "row", gap: spacing.sm, marginTop: spacing.lg }}>
+          <GradientButton label="Back" onPress={onBack} variant="outline" style={{ flex: 1 }} />
+          <GradientButton
+            label="Verify"
+            onPress={handleVerify}
+            loading={loading}
+            disabled={code.length !== OTP_LENGTH}
+            style={{ flex: 1 }}
+          />
+        </View>
+
         <TouchableOpacity onPress={handleResend} disabled={cooldown > 0} style={{ marginTop: spacing.lg, alignItems: "center" }}>
           <Text style={{ color: colors.textSecondary, fontFamily: fontFamily.bodyRegular, fontSize: fontSize.sm }}>
             Don't receive OTP?{" "}
@@ -138,8 +164,6 @@ export default function OtpVerificationScreen({ email, onVerified }: Props) {
             </Text>
           </Text>
         </TouchableOpacity>
-
-        <GradientButton label="Verify" onPress={handleVerify} loading={loading} style={{ marginTop: spacing.xl }} />
       </View>
 
       <SuccessModal

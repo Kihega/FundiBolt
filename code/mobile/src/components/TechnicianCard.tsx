@@ -12,22 +12,25 @@ type Props = {
   onDiscarded: (technicianId: string) => void;
 };
 
-// A single nearest-technician card. Slides/fades in on mount, and on
-// "Discard" plays a fade+shrink exit before notifying the parent to remove
-// it from the list - so the card never just pops away.
+// A single nearest-technician card - profile photo, name, and what they
+// work on - floating directly on the map per the approved wireframe.
+// Slides in from the right on mount (matching the wireframe's "animated
+// from right to left" note), and on "Discard" plays a fade+shrink exit
+// before notifying the parent to remove it from the list, so it never
+// just pops away.
 export default function TechnicianCard({ technician, onBook, onDiscarded }: Props) {
   const { colors, fontFamily, fontSize, spacing, radius } = useTheme();
 
   const opacity = useRef(new Animated.Value(0)).current;
-  const translateY = useRef(new Animated.Value(16)).current;
+  const translateX = useRef(new Animated.Value(48)).current;
   const scale = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
     Animated.parallel([
       Animated.timing(opacity, { toValue: 1, duration: 280, easing: Easing.out(Easing.cubic), useNativeDriver: true }),
-      Animated.timing(translateY, { toValue: 0, duration: 280, easing: Easing.out(Easing.cubic), useNativeDriver: true }),
+      Animated.timing(translateX, { toValue: 0, duration: 280, easing: Easing.out(Easing.cubic), useNativeDriver: true }),
     ]).start();
-  }, [opacity, translateY]);
+  }, [opacity, translateX]);
 
   function handleDiscard() {
     Animated.parallel([
@@ -47,77 +50,61 @@ export default function TechnicianCard({ technician, onBook, onDiscarded }: Prop
           borderRadius: radius.lg,
           borderColor: colors.border,
           opacity,
-          transform: [{ translateY }, { scale }],
+          transform: [{ translateX }, { scale }],
         },
       ]}
     >
       <View style={styles.headerRow}>
-        <Avatar uri={technician.avatarUrl} name={technician.fullName} size={56} />
+        <Avatar uri={technician.avatarUrl} name={technician.fullName} size={48} />
         <View style={{ flex: 1, marginLeft: spacing.sm }}>
-          <Text style={{ color: colors.textPrimary, fontFamily: fontFamily.headingSemiBold, fontSize: fontSize.base }}>
+          <Text numberOfLines={1} style={{ color: colors.textPrimary, fontFamily: fontFamily.headingSemiBold, fontSize: fontSize.sm }}>
             {technician.fullName}
           </Text>
-          <Text style={{ color: colors.primary, fontFamily: fontFamily.bodyMedium, fontSize: fontSize.sm }}>
+          <Text numberOfLines={1} style={{ color: colors.primary, fontFamily: fontFamily.bodyMedium, fontSize: fontSize.xs, marginTop: 1 }}>
             {technician.specialty}
           </Text>
           <View style={styles.metaRow}>
-            <Ionicons name="location-outline" size={13} color={colors.textMuted} />
+            <View style={[styles.dot, { backgroundColor: technician.isAvailable ? colors.success : colors.textMuted }]} />
             <Text style={{ color: colors.textMuted, fontFamily: fontFamily.bodyRegular, fontSize: fontSize.xs, marginLeft: 4 }}>
-              {technician.distanceKm.toFixed(1)} km away
+              {technician.isAvailable ? "Available" : "Unavailable"} · {technician.distanceKm.toFixed(1)} km
             </Text>
           </View>
         </View>
         <View style={styles.ratingBadge}>
-          <Ionicons name="star" size={12} color={colors.warning} />
-          <Text style={{ color: colors.textPrimary, fontFamily: fontFamily.bodySemiBold, fontSize: fontSize.xs, marginLeft: 3 }}>
+          <Ionicons name="star" size={11} color={colors.warning} />
+          <Text style={{ color: colors.textPrimary, fontFamily: fontFamily.bodySemiBold, fontSize: fontSize.xs, marginLeft: 2 }}>
             {technician.rating.toFixed(1)}
           </Text>
         </View>
       </View>
 
-      <View style={styles.availabilityRow}>
-        <View style={[styles.dot, { backgroundColor: technician.isAvailable ? colors.success : colors.textMuted }]} />
+      {technician.skills.length > 0 && (
         <Text
-          style={{
-            color: technician.isAvailable ? colors.success : colors.textMuted,
-            fontFamily: fontFamily.bodyMedium,
-            fontSize: fontSize.xs,
-          }}
+          numberOfLines={1}
+          style={{ color: colors.textSecondary, fontFamily: fontFamily.bodyRegular, fontSize: fontSize.xs, marginTop: spacing.xs }}
         >
-          {technician.isAvailable ? "Available now" : "Unavailable"}
+          {technician.skills.join(" · ")}
         </Text>
-      </View>
-
-      <View style={styles.skillsRow}>
-        {technician.skills.map((skill) => (
-          <View key={skill} style={[styles.skillChip, { backgroundColor: colors.surfaceElevated, borderRadius: radius.full }]}>
-            <Text style={{ color: colors.textSecondary, fontFamily: fontFamily.bodyRegular, fontSize: fontSize.xs }}>{skill}</Text>
-          </View>
-        ))}
-      </View>
+      )}
 
       <View style={[styles.actionsRow, { gap: spacing.sm }]}>
         <TouchableOpacity
           onPress={handleDiscard}
-          style={[styles.actionButton, { backgroundColor: colors.surfaceElevated, borderRadius: radius.md }]}
+          style={[styles.iconButton, { backgroundColor: colors.surfaceElevated, borderRadius: radius.md }]}
+          accessibilityRole="button"
+          accessibilityLabel={`Discard ${technician.fullName}`}
         >
           <Ionicons name="close" size={16} color={colors.textPrimary} />
-          <Text style={{ color: colors.textPrimary, fontFamily: fontFamily.bodySemiBold, fontSize: fontSize.sm, marginLeft: 6 }}>
-            Discard
-          </Text>
         </TouchableOpacity>
         <TouchableOpacity
           onPress={() => onBook(technician)}
           disabled={!technician.isAvailable}
-          style={[
-            styles.actionButton,
-            { backgroundColor: colors.primary, borderRadius: radius.md, opacity: technician.isAvailable ? 1 : 0.5 },
-          ]}
+          style={[styles.bookButton, { backgroundColor: colors.primary, borderRadius: radius.md, opacity: technician.isAvailable ? 1 : 0.5 }]}
+          accessibilityRole="button"
+          accessibilityLabel={`Book ${technician.fullName}`}
         >
-          <Ionicons name="calendar-outline" size={16} color="#FFFFFF" />
-          <Text style={{ color: "#FFFFFF", fontFamily: fontFamily.bodySemiBold, fontSize: fontSize.sm, marginLeft: 6 }}>
-            Book
-          </Text>
+          <Ionicons name="calendar-outline" size={15} color="#FFFFFF" />
+          <Text style={{ color: "#FFFFFF", fontFamily: fontFamily.bodySemiBold, fontSize: fontSize.xs, marginLeft: 6 }}>Book</Text>
         </TouchableOpacity>
       </View>
     </Animated.View>
@@ -125,14 +112,12 @@ export default function TechnicianCard({ technician, onBook, onDiscarded }: Prop
 }
 
 const styles = StyleSheet.create({
-  card: { width: 280, padding: 14, marginRight: 12, borderWidth: 1 },
+  card: { width: 240, padding: 12, marginRight: 12, borderWidth: 1 },
   headerRow: { flexDirection: "row", alignItems: "flex-start" },
-  metaRow: { flexDirection: "row", alignItems: "center", marginTop: 4 },
+  metaRow: { flexDirection: "row", alignItems: "center", marginTop: 3 },
+  dot: { width: 6, height: 6, borderRadius: 3 },
   ratingBadge: { flexDirection: "row", alignItems: "center" },
-  availabilityRow: { flexDirection: "row", alignItems: "center", marginTop: 10 },
-  dot: { width: 7, height: 7, borderRadius: 3.5, marginRight: 6 },
-  skillsRow: { flexDirection: "row", flexWrap: "wrap", marginTop: 10, gap: 6 },
-  skillChip: { paddingHorizontal: 10, paddingVertical: 5 },
-  actionsRow: { flexDirection: "row", marginTop: 14 },
-  actionButton: { flex: 1, flexDirection: "row", alignItems: "center", justifyContent: "center", paddingVertical: 10 },
+  actionsRow: { flexDirection: "row", marginTop: 10 },
+  iconButton: { width: 36, height: 36, alignItems: "center", justifyContent: "center" },
+  bookButton: { flex: 1, flexDirection: "row", alignItems: "center", justifyContent: "center", paddingVertical: 8 },
 });

@@ -1,7 +1,9 @@
 import { Request, Response } from "express";
 import { prisma } from "../config/prisma";
+import { redis } from "../config/redis";
 import { hashPassword, comparePassword } from "../utils/password";
 import { signToken } from "../utils/jwt";
+import { pendingSignupKey, PENDING_SIGNUP_TTL_SECONDS, issueOtp, PendingSignup } from "../services/otpService";
 
 // Only these two roles are self-selectable at signup. "admin" is
 // intentionally excluded here so a crafted request body can't grant an
@@ -14,6 +16,12 @@ function normalizeSignupRole(role: unknown): SelfSignupRole {
   return (SELF_SIGNUP_ROLES as readonly unknown[]).includes(role) ? (role as SelfSignupRole) : "customer";
 }
 
+// Signup no longer creates a User row directly. Instead it stashes the
+// (hashed) registration data in Redis under a short TTL and sends an OTP.
+// The actual User row is only created once that OTP is verified
+// (otp.controller.ts / verifyOtp), so an account only ever exists in the
+// database if its email was actually confirmed - there's no way to end up
+// with an unverified row sitting in Postgres forever.
 export async function signup(req: Request, res: Response) {
   const { fullName, email, phone, password, role } = req.body;
 
@@ -36,14 +44,21 @@ export async function signup(req: Request, res: Response) {
 
     const passwordHash = await hashPassword(password);
 
-    const user = await prisma.user.create({
-      data: { fullName, email, phone: phone || null, passwordHash, role: signupRole },
-      select: { id: true, fullName: true, email: true, phone: true, role: true, emailVerified: true, createdAt: true },
+    const pending: PendingSignup = {
+      fullName,
+      email,
+      phone: phone || null,
+      passwordHash,
+      role: signupRole,
+    };
+    await redis.set(pendingSignupKey(email), JSON.stringify(pending), { ex: PENDING_SIGNUP_TTL_SECONDS });
+
+    await issueOtp(email);
+
+    return res.status(200).json({
+      message: "Verification code sent. Enter it to finish creating your account.",
+      email,
     });
-
-    const token = signToken({ userId: user.id, role: user.role });
-
-    return res.status(201).json({ user, token });
   } catch (err) {
     console.error("Signup error:", err);
     return res.status(500).json({ message: "Something went wrong during signup." });
