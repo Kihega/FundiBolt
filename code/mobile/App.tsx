@@ -2,7 +2,6 @@ import React, { useCallback, useEffect, useState } from "react";
 import * as SplashScreenNative from "expo-splash-screen";
 import { useFonts, Inter_400Regular, Inter_500Medium, Inter_600SemiBold } from "@expo-google-fonts/inter";
 import { Poppins_500Medium, Poppins_600SemiBold, Poppins_700Bold } from "@expo-google-fonts/poppins";
-import { SafeAreaProvider } from "react-native-safe-area-context";
 
 import { ThemeProvider } from "./src/theme/ThemeContext";
 import SplashScreen from "./src/screens/SplashScreen";
@@ -79,8 +78,7 @@ function Root() {
     return (
       <SignupScreen
         role={pendingRole}
-        onSignupSuccess={({ token, email }) => {
-          setAuthToken(token);
+        onSignupSuccess={({ email }) => {
           setPendingEmail(email);
           setScreen("otp");
         }}
@@ -93,11 +91,11 @@ function Root() {
     return (
       <OtpVerificationScreen
         email={pendingEmail}
+        onBack={() => setScreen("signup")}
         onVerified={() => {
-          // Verification just confirms the email - it doesn't log the user
-          // in. Drop the signup token and send them to the login screen so
-          // they sign in explicitly with their new credentials.
-          setAuthToken(null);
+          // Verification is what actually creates the account now (see
+          // auth.controller.ts / otp.controller.ts) - there's no token to
+          // hold onto here, just send them to Login to sign in for real.
           setPendingEmail("");
           setScreen("login");
         }}
@@ -125,14 +123,8 @@ function Root() {
 
 export default function App() {
   return (
-    // Required by react-native-safe-area-context, which CustomerHomeScreen
-    // now uses for its SafeAreaView (the plain react-native SafeAreaView
-    // only computes insets on iOS - this one works correctly on Android
-    // too, needed now that app.json has android.edgeToEdgeEnabled set).
-    <SafeAreaProvider>
-      <ThemeProvider>
-        <Root />
-      </ThemeProvider>
-    </SafeAreaProvider>
+    <ThemeProvider>
+      <Root />
+    </ThemeProvider>
   );
 }
