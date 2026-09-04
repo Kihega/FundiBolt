@@ -2,16 +2,17 @@ import React from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useTheme } from "../theme/ThemeContext";
+import { useLanguage } from "../theme/LanguageContext";
 
 export type NavTab = "home" | "bookings" | "messages" | "account";
 
-type TabDef = { key: NavTab; label: string; icon: keyof typeof Ionicons.glyphMap };
+type TabDef = { key: NavTab; icon: keyof typeof Ionicons.glyphMap };
 
 const TABS: TabDef[] = [
-  { key: "home", label: "Home", icon: "home-outline" },
-  { key: "bookings", label: "Bookings", icon: "calendar-outline" },
-  { key: "messages", label: "Messages", icon: "chatbubbles-outline" },
-  { key: "account", label: "Account", icon: "person-outline" },
+  { key: "home", icon: "home-outline" },
+  { key: "bookings", icon: "calendar-outline" },
+  { key: "messages", icon: "chatbubbles-outline" },
+  { key: "account", icon: "person-outline" },
 ];
 
 type Props = {
@@ -23,11 +24,13 @@ type Props = {
 
 export default function BottomNavBar({ activeTab, onChangeTab, unreadMessageCount = 0 }: Props) {
   const { colors, fontFamily, fontSize, spacing } = useTheme();
+  const { t } = useLanguage();
 
   return (
     <View style={[styles.bar, { backgroundColor: colors.backgroundElevated, borderTopColor: colors.border, paddingBottom: spacing.sm }]}>
       {TABS.map((tab) => {
         const isActive = tab.key === activeTab;
+        const label = t(`nav.${tab.key}`);
         // Every tab icon here has a matching filled variant in Ionicons
         // (e.g. "home-outline" -> "home"), so swapping to the filled form
         // for the active tab is a safe string transform, not a lookup.
@@ -40,7 +43,7 @@ export default function BottomNavBar({ activeTab, onChangeTab, unreadMessageCoun
             onPress={() => onChangeTab(tab.key)}
             style={styles.tab}
             accessibilityRole="button"
-            accessibilityLabel={tab.label}
+            accessibilityLabel={label}
             accessibilityState={{ selected: isActive }}
           >
             <View>
@@ -49,9 +52,7 @@ export default function BottomNavBar({ activeTab, onChangeTab, unreadMessageCoun
                 <View style={[styles.badge, { backgroundColor: colors.error, borderColor: colors.backgroundElevated }]} />
               )}
             </View>
-            <Text style={{ color: tint, fontFamily: fontFamily.bodyMedium, fontSize: fontSize.xs, marginTop: 4 }}>
-              {tab.label}
-            </Text>
+            <Text style={{ color: tint, fontFamily: fontFamily.bodyMedium, fontSize: fontSize.xs, marginTop: 4 }}>{label}</Text>
           </TouchableOpacity>
         );
       })}

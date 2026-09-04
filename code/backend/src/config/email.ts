@@ -62,3 +62,67 @@ export async function sendOtpEmail(to: string, code: string): Promise<void> {
     text: otpEmailText(code),
   });
 }
+
+function passwordResetEmailHtml(tempPassword: string): string {
+  return `
+    <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; background-color:#0B0A14; padding:40px 16px;">
+      <div style="max-width:420px; margin:0 auto; background-color:#17151F; border:1px solid #2A273A; border-radius:16px; padding:36px 28px; text-align:center;">
+        <p style="margin:0 0 28px; font-size:24px; font-weight:700; letter-spacing:0.2px;">
+          <span style="color:#FFFFFF;">Fundi</span><span style="color:#7C5CFC;">Bolt</span>
+        </p>
+
+        <h1 style="margin:0 0 8px; font-size:20px; line-height:28px; color:#FFFFFF; font-weight:600;">
+          Reset your password
+        </h1>
+        <p style="margin:0 0 28px; font-size:14px; line-height:20px; color:#A8A3B8;">
+          Use the temporary password below to sign back in, then set a new one from Account &gt; Change Password.
+        </p>
+
+        <div style="display:inline-block; padding:16px 28px; background-color:#1F1C2C; border:1px solid #2A273A; border-radius:12px; margin-bottom:28px;">
+          <span style="font-size:26px; font-weight:700; letter-spacing:4px; color:#FFFFFF;">${tempPassword}</span>
+        </div>
+
+        <p style="margin:0 0 6px; font-size:13px; line-height:18px; color:#A8A3B8;">
+          This is now your account password - please change it once you're signed in.
+        </p>
+        <p style="margin:0; font-size:13px; line-height:18px; color:#6E6980;">
+          If you didn't request this, please change your password immediately.
+        </p>
+      </div>
+
+      <p style="max-width:420px; margin:20px auto 0; text-align:center; font-size:12px; color:#6E6980;">
+        FundiBolt &middot; Find trusted local fundis, fast.
+      </p>
+    </div>
+  `;
+}
+
+function passwordResetEmailText(tempPassword: string): string {
+  return [
+    "FundiBolt - Reset your password",
+    "",
+    `Your temporary password is: ${tempPassword}`,
+    "",
+    "Use it to sign back in, then set a new password from Account > Change Password.",
+    "If you didn't request this, please change your password immediately.",
+  ].join("\n");
+}
+
+export async function sendPasswordResetEmail(to: string, tempPassword: string): Promise<void> {
+  if (!resend) {
+    // Same dev fallback as sendOtpEmail - and just like that function, the
+    // caller (forgotPassword in auth.controller.ts) never echoes this back
+    // in the HTTP response, so this console line is the only place a temp
+    // password appears when Resend isn't configured for local dev.
+    console.log(`[DEV] RESEND_API_KEY not set - temporary password for ${to}: ${tempPassword}`);
+    return;
+  }
+
+  await resend.emails.send({
+    from: env.emailFrom,
+    to,
+    subject: "Your FundiBolt temporary password",
+    html: passwordResetEmailHtml(tempPassword),
+    text: passwordResetEmailText(tempPassword),
+  });
+}

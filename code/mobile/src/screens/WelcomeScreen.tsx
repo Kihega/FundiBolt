@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from "react";
-import { View, Image, Text, Animated, TouchableOpacity, StyleSheet, SafeAreaView, Easing } from "react-native";
+import { View, Text, Animated, TouchableOpacity, StyleSheet, SafeAreaView, Easing } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useTheme } from "../theme/ThemeContext";
 import { useResponsive } from "../theme/responsive";
@@ -51,7 +51,7 @@ function RoleCard({
         Animated.timing(translateY, { toValue: 0, duration: 500, easing: Easing.out(Easing.cubic), useNativeDriver: true }),
       ]),
     ]).start();
-  }, []);
+  }, [delay, opacity, translateY]);
 
   return (
     <Animated.View style={{ opacity, transform: [{ translateY }], marginTop: spacing.sm }}>
@@ -105,7 +105,7 @@ export default function WelcomeScreen({ onLogin, onSignup }: Props) {
       Animated.delay(900),
       Animated.timing(linkOpacity, { toValue: 1, duration: 500, useNativeDriver: true }),
     ]).start();
-  }, []);
+  }, [headlineOpacity, headlineTranslateY, linkOpacity, logoOpacity, logoScale]);
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>

@@ -47,7 +47,7 @@ export default function SuccessModal({ visible, title = "Success!", message, but
     pulse.start();
 
     return () => pulse.stop();
-  }, [visible]);
+  }, [visible, cardOpacity, cardScale, glowOpacity, glowScale]);
 
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>

@@ -21,18 +21,20 @@
         "backgroundColor": "#211C17"
       },
       "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false,
-      "config": {
-        "googleMaps": {
-          "apiKey": "REPLACE_WITH_YOUR_ANDROID_GOOGLE_MAPS_API_KEY"
-        }
-      }
+      "predictiveBackGestureEnabled": false
     },
     "web": {
       "favicon": "./assets/favicon.png"
     },
     "plugins": [
-      "expo-font"
+      "expo-font",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "FundiBolt needs access to your photos so you can set a profile picture.",
+          "cameraPermission": "FundiBolt needs access to your camera so you can take a profile picture."
+        }
+      ]
     ]
   }
 }

@@ -2,11 +2,13 @@ import React from "react";
 import { View, TextInput, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useTheme } from "../theme/ThemeContext";
+import { useLanguage } from "../theme/LanguageContext";
 
 type Props = {
   value?: string;
   onChangeText?: (text: string) => void;
   onSubmit?: () => void;
+  /** Overrides the translated default placeholder if provided. */
   placeholder?: string;
 };
 
@@ -15,8 +17,9 @@ type Props = {
 // nobody nearby to show as cards (see MapSection's Case 2) - wiring it to
 // real search results is a follow-up once that endpoint exists (see
 // services/technicians.ts).
-export default function SearchBar({ value, onChangeText, onSubmit, placeholder = "Search Technician" }: Props) {
+export default function SearchBar({ value, onChangeText, onSubmit, placeholder }: Props) {
   const { colors, fontFamily, fontSize, spacing, radius } = useTheme();
+  const { t } = useLanguage();
 
   return (
     <View
@@ -36,7 +39,7 @@ export default function SearchBar({ value, onChangeText, onSubmit, placeholder =
         value={value}
         onChangeText={onChangeText}
         onSubmitEditing={onSubmit}
-        placeholder={placeholder}
+        placeholder={placeholder ?? t("search.placeholder")}
         placeholderTextColor={colors.placeholder}
         returnKeyType="search"
         style={[styles.input, { color: colors.textPrimary, fontFamily: fontFamily.bodyRegular, fontSize: fontSize.sm }]}

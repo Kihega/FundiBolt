@@ -66,7 +66,7 @@ export default function SignupScreen({ role, onSignupSuccess, onGoToLogin }: Pro
         useNativeDriver: true,
       }),
     ]).start();
-  }, []);
+  }, [fieldsOpacity, fieldsTranslateY]);
 
   // Live feedback as soon as both fields have content, rather than only on
   // submit - so a mismatch is visible while the person is still typing.
