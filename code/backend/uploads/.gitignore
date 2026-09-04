@@ -1,0 +1,5 @@
+# Uploaded files (see src/config/upload.ts) shouldn't be committed -
+# they're user data, not source. This folder is created automatically at
+# server startup if it doesn't exist.
+*
+!.gitignore

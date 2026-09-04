@@ -2,19 +2,29 @@ import React, { useCallback, useEffect, useState } from "react";
 import { View, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useTheme } from "../theme/ThemeContext";
+import { useLanguage } from "../theme/LanguageContext";
 import { useResponsive } from "../theme/responsive";
 import { AuthUser } from "../types/user";
 import { Technician, fetchNearbyTechnicians } from "../services/technicians";
+import { SUPPORT_CONVERSATION_ID } from "../services/messages";
 import TopBar from "../components/TopBar";
 import SearchBar from "../components/SearchBar";
 import MapSection from "../components/MapSection";
 import RecenterCompassButton from "../components/RecenterCompassButton";
 import BottomNavBar, { NavTab } from "../components/BottomNavBar";
+import SideMenu from "../components/SideMenu";
+import ChangePasswordModal from "../components/ChangePasswordModal";
+import SuccessModal from "../components/SuccessModal";
+import AccountScreen from "./AccountScreen";
+import BookingsScreen from "./BookingsScreen";
+import MessagesScreen from "./MessagesScreen";
 
 type Props = {
   user: AuthUser;
   token: string;
   onLogout: () => void;
+  /** Bubbles a freshly-uploaded avatar's URL up to App.tsx's shared user state - see AccountScreen.tsx for why this can't just be local state here. */
+  onAvatarUpdated: (avatarUrl: string) => void;
 };
 
 const NEARBY_RADIUS_KM = 2;
@@ -24,14 +34,27 @@ const NEARBY_RADIUS_KM = 2;
 // than inline magic numbers so it's easy to find and replace later.
 const FALLBACK_LOCATION = { latitude: -6.7924, longitude: 39.2083 };
 
-export default function CustomerHomeScreen({ user, token, onLogout }: Props) {
+// The shell for every logged-in customer screen: top bar, side menu,
+// bottom nav bar, and the change-password modal are all owned here so
+// they stay put while the body underneath swaps between Home (the map),
+// Bookings, Messages, and Account depending on the active tab.
+export default function CustomerHomeScreen({ user, token, onLogout, onAvatarUpdated }: Props) {
   const { colors } = useTheme();
+  const { t } = useLanguage();
   const { maxContentWidth } = useResponsive();
 
   const [activeTab, setActiveTab] = useState<NavTab>("home");
   const [technicians, setTechnicians] = useState<Technician[]>([]);
   const [selectedTechnicianId, setSelectedTechnicianId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+
+  const [isMenuOpen, setMenuOpen] = useState(false);
+  const [isChangePasswordOpen, setChangePasswordOpen] = useState(false);
+  const [isPasswordSuccessVisible, setPasswordSuccessVisible] = useState(false);
+  // Set right before switching to the Messages tab (e.g. from "Need
+  // Support" in the side menu) so MessagesScreen opens that thread
+  // immediately instead of landing on the conversation list.
+  const [messagesTarget, setMessagesTarget] = useState<string | null>(null);
 
   // No verified fundi accounts exist yet, so this will currently always
   // resolve to an empty list (see services/technicians.ts) and the map
@@ -59,20 +82,26 @@ export default function CustomerHomeScreen({ user, token, onLogout }: Props) {
   }, []);
 
   const handleBookTechnician = useCallback((technician: Technician) => {
-    // Booking flow isn't built yet - this sprint only covers the home
-    // screen UI. Selecting the technician is the visible feedback for now.
+    // Booking flow itself isn't built yet - selecting the technician is
+    // the visible feedback for now. Once it exists, this is also where a
+    // new entry would be added for BookingsScreen to pick up.
     setSelectedTechnicianId(technician.id);
   }, []);
 
-  function handleChangeTab(tab: NavTab) {
-    setActiveTab(tab);
-    // Bookings, Messages, and Account screens are out of scope for this
-    // sprint (home screen only). Account temporarily doubles as "log out"
-    // so there's still a way out of the app during development - replace
-    // this with real navigation once AccountScreen exists.
-    if (tab === "account") {
-      onLogout();
-    }
+  function openAccount() {
+    setActiveTab("account");
+    setMenuOpen(false);
+  }
+
+  function openChangePassword() {
+    setMenuOpen(false);
+    setChangePasswordOpen(true);
+  }
+
+  function openSupport() {
+    setMessagesTarget(SUPPORT_CONVERSATION_ID);
+    setActiveTab("messages");
+    setMenuOpen(false);
   }
 
   return (
@@ -87,34 +116,46 @@ export default function CustomerHomeScreen({ user, token, onLogout }: Props) {
           userName={user.fullName}
           avatarUrl={user.avatarUrl}
           lastActiveAt={user.lastActiveAt}
-          onPressProfile={() => handleChangeTab("account")}
-          onPressMenu={() => {
-            // Side drawer/menu isn't built yet - this sprint only covers
-            // the home screen layout. Hooking up navigation is a follow-up.
-          }}
+          onPressProfile={openAccount}
+          onPressMenu={() => setMenuOpen(true)}
         />
 
-        <SearchBar
-          value={searchQuery}
-          onChangeText={setSearchQuery}
-          onSubmit={() => {
-            // Search-by-name/trade isn't wired to the backend yet (see
-            // services/technicians.ts) - this is the customer's fallback
-            // when the map has no nearby cards to show (Case 2 in the
-            // wireframe), ready to wire up once that endpoint exists.
-          }}
-        />
+        {activeTab === "home" && (
+          <SearchBar
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+            onSubmit={() => {
+              // Search-by-name/trade isn't wired to the backend yet (see
+              // services/technicians.ts) - this is the customer's fallback
+              // when the map has no nearby cards to show (Case 2 in the
+              // wireframe), ready to wire up once that endpoint exists.
+            }}
+          />
+        )}
 
         <View style={styles.body}>
-          <MapSection
-            technicians={technicians}
-            userLocation={FALLBACK_LOCATION}
-            radiusKm={NEARBY_RADIUS_KM}
-            onSelectTechnician={setSelectedTechnicianId}
-            selectedTechnicianId={selectedTechnicianId}
-            onBookTechnician={handleBookTechnician}
-            onDiscardTechnician={handleDiscardTechnician}
-          />
+          {activeTab === "home" && (
+            <MapSection
+              technicians={technicians}
+              userLocation={FALLBACK_LOCATION}
+              radiusKm={NEARBY_RADIUS_KM}
+              onSelectTechnician={setSelectedTechnicianId}
+              selectedTechnicianId={selectedTechnicianId}
+              onBookTechnician={handleBookTechnician}
+              onDiscardTechnician={handleDiscardTechnician}
+            />
+          )}
+          {activeTab === "bookings" && <BookingsScreen token={token} />}
+          {activeTab === "messages" && (
+            <MessagesScreen
+              token={token}
+              initialConversationId={messagesTarget}
+              onConversationOpened={() => setMessagesTarget(null)}
+            />
+          )}
+          {activeTab === "account" && (
+            <AccountScreen user={user} token={token} onLogout={onLogout} onAvatarUpdated={onAvatarUpdated} />
+          )}
         </View>
 
         {/* This wrapper only contains the nav bar (no flex/explicit height),
@@ -122,12 +163,39 @@ export default function CustomerHomeScreen({ user, token, onLogout }: Props) {
             is absolutely positioned within it at top: -half-its-height,
             which puts its vertical center exactly on this wrapper's top
             edge - i.e. the map/nav-bar boundary - giving a precise 50/50
-            straddle no matter how tall the nav bar ends up being. */}
+            straddle no matter how tall the nav bar ends up being. Only
+            shown on the Home tab, since it's a map control. */}
         <View style={styles.navWrap}>
-          <RecenterCompassButton onPress={loadTechnicians} />
-          <BottomNavBar activeTab={activeTab} onChangeTab={handleChangeTab} />
+          {activeTab === "home" && <RecenterCompassButton onPress={loadTechnicians} />}
+          <BottomNavBar activeTab={activeTab} onChangeTab={setActiveTab} />
         </View>
       </View>
+
+      <SideMenu
+        visible={isMenuOpen}
+        onClose={() => setMenuOpen(false)}
+        userName={user.fullName}
+        email={user.email}
+        avatarUrl={user.avatarUrl}
+        lastActiveAt={user.lastActiveAt}
+        onViewProfile={openAccount}
+        onChangePassword={openChangePassword}
+        onNeedSupport={openSupport}
+      />
+
+      <ChangePasswordModal
+        visible={isChangePasswordOpen}
+        onClose={() => setChangePasswordOpen(false)}
+        token={token}
+        email={user.email}
+        onSuccess={() => setPasswordSuccessVisible(true)}
+      />
+
+      <SuccessModal
+        visible={isPasswordSuccessVisible}
+        message={t("changePassword.success")}
+        onClose={() => setPasswordSuccessVisible(false)}
+      />
     </SafeAreaView>
   );
 }

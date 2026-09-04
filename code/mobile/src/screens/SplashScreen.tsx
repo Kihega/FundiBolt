@@ -13,6 +13,17 @@ export default function SplashScreen({ onFinish }: Props) {
   const textTranslateY = useRef(new Animated.Value(16)).current;
   const glowPulse = useRef(new Animated.Value(0)).current;
 
+  // Keep the latest onFinish in a ref rather than the animation effect's
+  // own dependency array below: that effect must only ever run once (it's
+  // a one-shot splash timer), but onFinish is a prop and may be a fresh
+  // function identity on every parent render - depending on it directly
+  // would restart the 2.8s timer on every such re-render instead of
+  // firing once as intended.
+  const onFinishRef = useRef(onFinish);
+  useEffect(() => {
+    onFinishRef.current = onFinish;
+  }, [onFinish]);
+
   useEffect(() => {
     // Logo entrance
     Animated.parallel([
@@ -48,9 +59,9 @@ export default function SplashScreen({ onFinish }: Props) {
       ]),
     ]).start();
 
-    const timer = setTimeout(onFinish, 2800);
+    const timer = setTimeout(() => onFinishRef.current(), 2800);
     return () => clearTimeout(timer);
-  }, []);
+  }, [glowPulse, logoOpacity, logoScale, textOpacity, textTranslateY]);
 
   const ringScale = glowPulse.interpolate({ inputRange: [0, 1], outputRange: [1, 1.12] });
   const ringOpacity = glowPulse.interpolate({ inputRange: [0, 1], outputRange: [0.35, 0.1] });
