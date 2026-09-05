@@ -18,5 +18,10 @@ module.exports = {
     "@typescript-eslint/no-unused-vars": ["warn", { argsIgnorePattern: "^_" }],
     "@typescript-eslint/no-explicit-any": "off",
     "no-console": "off",
+    // require("../assets/...") is the standard, correct way to
+    // reference static images/fonts in Expo/React Native - Metro
+    // needs it statically analyzable, so this isn't a bug to rewrite
+    // as an import.
+    "@typescript-eslint/no-require-imports": "off",
   },
 };

@@ -51,7 +51,7 @@ export default function LoginScreen({ onLoginSuccess, onGoToSignup }: Props) {
         return;
       }
       onLoginSuccess({ token: data.token, user: data.user });
-    } catch (e) {
+    } catch {
       setError("Network error. Check your connection and try again.");
     } finally {
       setLoading(false);
