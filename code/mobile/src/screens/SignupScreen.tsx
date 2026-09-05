@@ -107,7 +107,7 @@ export default function SignupScreen({ role, onSignupSuccess, onGoToLogin }: Pro
       // itself isn't created yet either; that only happens once the OTP is
       // verified (see OtpVerificationScreen).
       onSignupSuccess({ email });
-    } catch (e) {
+    } catch {
       setError("Network error. Check your connection and try again.");
     } finally {
       setLoading(false);

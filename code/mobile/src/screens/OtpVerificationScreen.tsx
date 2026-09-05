@@ -61,7 +61,7 @@ export default function OtpVerificationScreen({ email, onVerified, onBack }: Pro
         return;
       }
       startCooldown();
-    } catch (e) {
+    } catch {
       setError("Network error. Check your connection and try again.");
     }
   }
@@ -85,7 +85,7 @@ export default function OtpVerificationScreen({ email, onVerified, onBack }: Pro
         return;
       }
       setShowSuccess(true);
-    } catch (e) {
+    } catch {
       setError("Network error. Check your connection and try again.");
     } finally {
       setLoading(false);
