@@ -61,3 +61,43 @@ export async function uploadAvatar(req: AuthedRequest, res: Response) {
     return res.status(500).json({ message: "Could not save your profile photo. Please try again." });
   }
 }
+
+function parseLatOrLng(value: unknown, min: number, max: number): number | null {
+  const n = typeof value === "number" ? value : typeof value === "string" ? Number(value) : NaN;
+  if (!Number.isFinite(n) || n < min || n > max) return null;
+  return n;
+}
+
+// Powers a technician's live location ping, sent periodically while
+// their app is foregrounded (see mobile:
+// hooks/useTechnicianLocationBroadcast.ts) - this is what makes them
+// show up on a customer's nearby-technicians map (see
+// technician.controller.ts#getNearbyTechnicians). Restricted to fundi
+// accounts only: customers and admins have no feature that uses their
+// location, so there's no reason to accept or store it for them
+// (data-minimization - don't collect what nothing reads back).
+export async function updateMyLocation(req: AuthedRequest, res: Response) {
+  if (!req.user) {
+    return res.status(401).json({ message: "Missing or invalid Authorization header." });
+  }
+  if (req.user.role !== "fundi") {
+    return res.status(403).json({ message: "Only technician accounts can update location." });
+  }
+
+  const latitude = parseLatOrLng(req.body.latitude, -90, 90);
+  const longitude = parseLatOrLng(req.body.longitude, -180, 180);
+  if (latitude === null || longitude === null) {
+    return res.status(400).json({ message: "Valid latitude and longitude are required." });
+  }
+
+  try {
+    await prisma.user.update({
+      where: { id: req.user.userId },
+      data: { latitude, longitude, locationUpdatedAt: new Date() },
+    });
+    return res.status(200).json({ message: "Location updated." });
+  } catch (err) {
+    console.error("Update location error:", err);
+    return res.status(500).json({ message: "Could not update your location." });
+  }
+}

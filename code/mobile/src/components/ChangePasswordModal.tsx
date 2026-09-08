@@ -84,7 +84,7 @@ export default function ChangePasswordModal({ visible, onClose, token, email, on
       setError(t("changePassword.fillAllFields"));
       return;
     }
-    if (newPassword.length < 6) {
+    if (newPassword.length < 8) {
       setError(t("changePassword.tooShort"));
       return;
     }

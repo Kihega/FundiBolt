@@ -136,26 +136,57 @@ describe("POST /api/otp/send", () => {
 });
 
 // Directly unit-tests the safety guard at its source, rather than trying to
-// flip NODE_ENV around a full HTTP request cycle.
-describe("DEV_BYPASS_CODE respects NODE_ENV", () => {
+// flip NODE_ENV around a full HTTP request cycle. The bypass now requires
+// TWO conditions (see services/otpService.ts): NODE_ENV !== "production"
+// AND ENABLE_DEV_OTP_BYPASS === "true" - each test below sets both env
+// vars explicitly rather than relying on jest.setup.ts's defaults, so
+// it's unambiguous which combination each case is actually verifying.
+describe("DEV_BYPASS_CODE requires both NODE_ENV and an explicit opt-in", () => {
   const originalNodeEnv = process.env.NODE_ENV;
+  const originalBypassFlag = process.env.ENABLE_DEV_OTP_BYPASS;
 
   afterEach(() => {
     process.env.NODE_ENV = originalNodeEnv;
+    process.env.ENABLE_DEV_OTP_BYPASS = originalBypassFlag;
     jest.resetModules();
   });
 
-  it("is disabled when NODE_ENV=production", () => {
+  it("is disabled when NODE_ENV=production, even with the opt-in flag set", () => {
     jest.resetModules();
     process.env.NODE_ENV = "production";
+    process.env.ENABLE_DEV_OTP_BYPASS = "true";
     // eslint-disable-next-line @typescript-eslint/no-var-requires
     const otpService = require("../src/services/otpService");
     expect(otpService.DEV_BYPASS_CODE).toBeNull();
   });
 
-  it("is enabled outside production", () => {
+  // The core new safety property: NODE_ENV alone is never enough. A
+  // missing, misconfigured, or non-"production" environment (staging,
+  // an unset variable, a typo, ...) must fail CLOSED without the
+  // separate explicit opt-in - this is what protects against exactly
+  // the scenario the old single-flag design didn't.
+  it("is disabled outside production when the opt-in flag is not set", () => {
     jest.resetModules();
     process.env.NODE_ENV = "test";
+    delete process.env.ENABLE_DEV_OTP_BYPASS;
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const otpService = require("../src/services/otpService");
+    expect(otpService.DEV_BYPASS_CODE).toBeNull();
+  });
+
+  it("is disabled outside production when the opt-in flag is set to anything other than the exact string \"true\"", () => {
+    jest.resetModules();
+    process.env.NODE_ENV = "test";
+    process.env.ENABLE_DEV_OTP_BYPASS = "1";
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const otpService = require("../src/services/otpService");
+    expect(otpService.DEV_BYPASS_CODE).toBeNull();
+  });
+
+  it("is enabled only when both NODE_ENV is not production AND the opt-in flag is exactly \"true\"", () => {
+    jest.resetModules();
+    process.env.NODE_ENV = "test";
+    process.env.ENABLE_DEV_OTP_BYPASS = "true";
     // eslint-disable-next-line @typescript-eslint/no-var-requires
     const otpService = require("../src/services/otpService");
     expect(otpService.DEV_BYPASS_CODE).toBe("123456");

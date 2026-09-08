@@ -13,7 +13,7 @@ import {
   deleteMessage as deleteMessageOnBackend,
   SUPPORT_CONVERSATION_ID,
 } from "../services/messages";
-import Avatar from "../components/Avatar";
+import ConversationAvatar from "../components/ConversationAvatar";
 import SwipeToDelete from "../components/SwipeToDelete";
 
 type Props = {
@@ -112,12 +112,28 @@ export default function MessagesScreen({ token, initialConversationId, onConvers
       text,
       sender: "me",
       sentAt: new Date().toISOString(),
+      status: "sent",
     };
     setConversations((prev) =>
       prev.map((c) => (c.id === openId ? { ...c, messages: [...c.messages, message], lastMessage: text, lastMessageAt: message.sentAt } : c))
     );
     setDraft("");
-    sendMessageToBackend(openId, text, token);
+
+    // sendMessageToBackend swallows its own errors (see services/messages.ts
+    // - it always keeps the optimistic local copy either way), so
+    // "delivered" here really means "the app finished attempting the
+    // send", not a confirmed server-side delivery. Good enough for now
+    // without a real delivery-acknowledgement endpoint.
+    const sentMessageId = message.id;
+    sendMessageToBackend(openId, text, token).then(() => {
+      setConversations((prev) =>
+        prev.map((c) =>
+          c.id === openId
+            ? { ...c, messages: c.messages.map((m) => (m.id === sentMessageId ? { ...m, status: "delivered" } : m)) }
+            : c
+        )
+      );
+    });
 
     // Canned auto-reply so the thread feels alive - there's no real
     // technician/support backend wired up yet (see services/messages.ts).
@@ -133,7 +149,19 @@ export default function MessagesScreen({ token, initialConversationId, onConvers
             sender: "them",
             sentAt: new Date().toISOString(),
           };
-          return { ...c, messages: [...c.messages, reply], lastMessage: reply.text, lastMessageAt: reply.sentAt };
+          // A reply arriving is the closest signal we have that the other
+          // side has seen the conversation - used here as a stand-in
+          // "read" receipt for every prior "me" message, since there's no
+          // real per-message readAt tracking on the backend yet.
+          const messagesWithReadReceipts = c.messages.map((m) =>
+            m.sender === "me" ? { ...m, status: "read" as const } : m
+          );
+          return {
+            ...c,
+            messages: [...messagesWithReadReceipts, reply],
+            lastMessage: reply.text,
+            lastMessageAt: reply.sentAt,
+          };
         })
       );
     }, 900);
@@ -171,7 +199,12 @@ export default function MessagesScreen({ token, initialConversationId, onConvers
           <TouchableOpacity onPress={() => setOpenId(null)} accessibilityRole="button" accessibilityLabel={t("messages.back")}>
             <Ionicons name="chevron-back" size={24} color={colors.textPrimary} />
           </TouchableOpacity>
-          <Avatar uri={openConversation.participantAvatarUrl} name={openConversation.participantName} size={34} />
+          <ConversationAvatar
+            isSupport={openConversation.isSupport}
+            avatarUrl={openConversation.participantAvatarUrl}
+            name={openConversation.participantName}
+            size={34}
+          />
           <Text
             numberOfLines={1}
             style={{ color: colors.textPrimary, fontFamily: fontFamily.headingSemiBold, fontSize: fontSize.base, marginLeft: spacing.sm }}
@@ -186,7 +219,15 @@ export default function MessagesScreen({ token, initialConversationId, onConvers
           keyExtractor={(m) => m.id}
           contentContainerStyle={{ padding: spacing.md, width: "100%", maxWidth: maxContentWidth, alignSelf: "center" }}
           onContentSizeChange={() => listRef.current?.scrollToEnd({ animated: true })}
-          renderItem={({ item }) => <MessageBubble message={item} onDelete={() => handleDeleteMessage(item.id)} />}
+          renderItem={({ item }) => (
+            <MessageBubble
+              message={item}
+              onDelete={() => handleDeleteMessage(item.id)}
+              participantName={openConversation.participantName}
+              participantAvatarUrl={openConversation.participantAvatarUrl}
+              isSupport={openConversation.isSupport}
+            />
+          )}
         />
 
         <View style={[styles.composer, { borderTopColor: colors.border, paddingHorizontal: spacing.sm, paddingVertical: spacing.sm }]}>
@@ -254,7 +295,12 @@ function ConversationRow({ conversation, onPress }: { conversation: Conversation
         { backgroundColor: colors.surface, borderColor: colors.border, borderRadius: radius.lg, padding: spacing.sm },
       ]}
     >
-      <Avatar uri={conversation.participantAvatarUrl} name={conversation.participantName} size={48} />
+      <ConversationAvatar
+        isSupport={conversation.isSupport}
+        avatarUrl={conversation.participantAvatarUrl}
+        name={conversation.participantName}
+        size={48}
+      />
       <View style={{ flex: 1, marginLeft: spacing.sm }}>
         <Text numberOfLines={1} style={{ color: colors.textPrimary, fontFamily: fontFamily.headingSemiBold, fontSize: fontSize.sm }}>
           {conversation.participantName}
@@ -272,15 +318,39 @@ function ConversationRow({ conversation, onPress }: { conversation: Conversation
   );
 }
 
-function MessageBubble({ message, onDelete }: { message: Message; onDelete: () => void }) {
+function MessageBubble({
+  message,
+  onDelete,
+  participantName,
+  participantAvatarUrl,
+  isSupport,
+}: {
+  message: Message;
+  onDelete: () => void;
+  participantName: string;
+  participantAvatarUrl?: string | null;
+  isSupport?: boolean;
+}) {
   const { colors, fontFamily, fontSize, radius } = useTheme();
   const isMe = message.sender === "me";
 
+  // Sent (single check) -> delivered (double check) -> read (double
+  // check, green) - WhatsApp/Messenger-style. Only ever shown on the
+  // customer's own bubbles; see MessageStatus's doc comment in
+  // services/messages.ts for what "read" actually means here (a
+  // client-side heuristic, not a real backend read receipt yet).
+  const tickIcon = message.status === "sent" || !message.status ? "checkmark" : "checkmark-done";
+  const tickColor = message.status === "read" ? colors.success : "rgba(255,255,255,0.75)";
+
   const bubble = (
     <View style={[styles.bubbleRow, { justifyContent: isMe ? "flex-end" : "flex-start" }]}>
+      {!isMe && (
+        <ConversationAvatar isSupport={isSupport} avatarUrl={participantAvatarUrl} name={participantName} size={28} />
+      )}
       <View
         style={[
           styles.bubble,
+          !isMe && styles.bubbleWithAvatar,
           {
             backgroundColor: isMe ? colors.primary : colors.surfaceElevated,
             borderRadius: radius.lg,
@@ -292,6 +362,11 @@ function MessageBubble({ message, onDelete }: { message: Message; onDelete: () =
         <Text style={{ color: isMe ? "#FFFFFF" : colors.textPrimary, fontFamily: fontFamily.bodyRegular, fontSize: fontSize.sm }}>
           {message.text}
         </Text>
+        {isMe && (
+          <View style={styles.tickRow}>
+            <Ionicons name={tickIcon} size={14} color={tickColor} />
+          </View>
+        )}
       </View>
     </View>
   );
@@ -310,8 +385,10 @@ const styles = StyleSheet.create({
   conversationRow: { flexDirection: "row", alignItems: "center", borderWidth: 1 },
   unreadBadge: { minWidth: 22, height: 22, alignItems: "center", justifyContent: "center", paddingHorizontal: 6 },
   chatHeader: { flexDirection: "row", alignItems: "center", borderBottomWidth: 1 },
-  bubbleRow: { flexDirection: "row", marginBottom: 8 },
+  bubbleRow: { flexDirection: "row", marginBottom: 8, alignItems: "flex-end" },
   bubble: { maxWidth: "78%", paddingHorizontal: 12, paddingVertical: 8 },
+  bubbleWithAvatar: { marginLeft: 6 },
+  tickRow: { flexDirection: "row", justifyContent: "flex-end", marginTop: 2 },
   composer: { flexDirection: "row", alignItems: "flex-end", borderTopWidth: 1 },
   composerInput: { flex: 1, borderWidth: 1, paddingHorizontal: 14, paddingVertical: 10, maxHeight: 100, marginRight: 8 },
   sendButton: { width: 40, height: 40, alignItems: "center", justifyContent: "center" },

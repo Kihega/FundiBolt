@@ -39,6 +39,32 @@ model User {
   // auth.middleware.ts) so the mobile app's "online" dot reflects real
   // activity instead of a client-only guess.
   lastActiveAt  DateTime? @map("last_active_at")
+
+  // Live location, published only by technician (fundi) accounts via
+  // PATCH /api/users/me/location (see user.controller.ts) - customers'
+  // own position is read straight from on-device GPS and never sent to
+  // or stored on the server. Both null until a technician's app sends
+  // its first ping. A technician only ever appears on a customer's map
+  // while locationUpdatedAt is recent (see LOCATION_FRESHNESS_MINUTES in
+  // utils/geo.ts) - that recency check IS what "online / ready for
+  // bookings" means for this feature, so there's no separate flag for it.
+  latitude          Float?
+  longitude         Float?
+  locationUpdatedAt DateTime? @map("location_updated_at")
+
+  // Minimal technician-profile fields needed to power the customer map's
+  // technician cards (see mobile: services/technicians.ts, TechnicianCard.tsx).
+  // Deliberately plain columns on User rather than a separate
+  // TechnicianProfile model for now, since there's no profile-editing
+  // flow yet either - worth revisiting once technician onboarding grows
+  // into something bigger than "a few fields". specialty/skills/rating
+  // are meaningless for customer/admin accounts and simply stay at their
+  // defaults for those roles.
+  specialty   String?
+  skills      String[] @default([])
+  rating      Float?   @default(0)
+  ratingCount Int      @default(0) @map("rating_count")
+
   createdAt     DateTime  @default(now()) @map("created_at")
   updatedAt     DateTime  @updatedAt @map("updated_at")
 

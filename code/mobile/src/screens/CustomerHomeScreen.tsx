@@ -1,9 +1,11 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { View, StyleSheet } from "react-native";
+import { View, Text, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { Ionicons } from "@expo/vector-icons";
 import { useTheme } from "../theme/ThemeContext";
 import { useLanguage } from "../theme/LanguageContext";
 import { useResponsive } from "../theme/responsive";
+import { useLiveLocation } from "../hooks/useLiveLocation";
 import { AuthUser } from "../types/user";
 import { Technician, fetchNearbyTechnicians } from "../services/technicians";
 import { SUPPORT_CONVERSATION_ID } from "../services/messages";
@@ -29,9 +31,10 @@ type Props = {
 
 const NEARBY_RADIUS_KM = 2;
 
-// Dar es Salaam city-center fallback, used only until device geolocation
-// (expo-location) is wired up. Keeping this as a named constant rather
-// than inline magic numbers so it's easy to find and replace later.
+// Dar es Salaam city-center fallback - only ever shown if the customer
+// denies location permission or the device can't produce a GPS fix (see
+// useLiveLocation). Keeping this as a named constant rather than inline
+// magic numbers so it's easy to find and replace later.
 const FALLBACK_LOCATION = { latitude: -6.7924, longitude: 39.2083 };
 
 // The shell for every logged-in customer screen: top bar, side menu,
@@ -48,6 +51,14 @@ export default function CustomerHomeScreen({ user, token, onLogout, onAvatarUpda
   const [selectedTechnicianId, setSelectedTechnicianId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
 
+  // Live device GPS - starts at FALLBACK_LOCATION and switches to the
+  // customer's real, continuously-updating position once location
+  // permission is granted (see hooks/useLiveLocation.ts). errorKey is set
+  // if permission was denied or a fix couldn't be obtained, in which case
+  // we stay on the fallback and let the customer know why via the banner
+  // below, rather than failing silently.
+  const { coords: liveCoords, errorKey: locationErrorKey } = useLiveLocation(FALLBACK_LOCATION);
+
   const [isMenuOpen, setMenuOpen] = useState(false);
   const [isChangePasswordOpen, setChangePasswordOpen] = useState(false);
   const [isPasswordSuccessVisible, setPasswordSuccessVisible] = useState(false);
@@ -56,25 +67,30 @@ export default function CustomerHomeScreen({ user, token, onLogout, onAvatarUpda
   // immediately instead of landing on the conversation list.
   const [messagesTarget, setMessagesTarget] = useState<string | null>(null);
 
-  // No verified fundi accounts exist yet, so this will currently always
-  // resolve to an empty list (see services/technicians.ts) and the map
-  // renders its empty state. It's wired up now so nothing else needs to
-  // change once technician discovery is live server-side. Pulled out of
-  // the effect so the recenter/refresh button can also trigger it on demand.
+  // Backed by a real endpoint now (GET /api/technicians/nearby) - a
+  // technician shows up here only while online (a recent location ping;
+  // see the backend's LOCATION_FRESHNESS_MINUTES), so this naturally
+  // resolves to an empty list and the map renders its empty state until
+  // an actual technician is online nearby. Pulled out of the effect so
+  // the recenter/refresh button can also trigger it on demand.
   const loadTechnicians = useCallback(async () => {
-    const results = await fetchNearbyTechnicians({ ...FALLBACK_LOCATION, radiusKm: NEARBY_RADIUS_KM, token });
+    const results = await fetchNearbyTechnicians({ ...liveCoords, radiusKm: NEARBY_RADIUS_KM, token });
     setTechnicians(results);
-  }, [token]);
+  }, [liveCoords, token]);
 
+  // Re-fetches whenever the customer's live position changes meaningfully
+  // (useLiveLocation already throttles updates to ~25m/8s movements - see
+  // that hook - so this can't fire on every GPS wobble) as well as on
+  // mount and whenever the token changes.
   useEffect(() => {
     let cancelled = false;
-    fetchNearbyTechnicians({ ...FALLBACK_LOCATION, radiusKm: NEARBY_RADIUS_KM, token }).then((results) => {
+    fetchNearbyTechnicians({ ...liveCoords, radiusKm: NEARBY_RADIUS_KM, token }).then((results) => {
       if (!cancelled) setTechnicians(results);
     });
     return () => {
       cancelled = true;
     };
-  }, [token]);
+  }, [liveCoords, token]);
 
   const handleDiscardTechnician = useCallback((technicianId: string) => {
     setTechnicians((prev) => prev.filter((t) => t.id !== technicianId));
@@ -115,7 +131,6 @@ export default function CustomerHomeScreen({ user, token, onLogout, onAvatarUpda
         <TopBar
           userName={user.fullName}
           avatarUrl={user.avatarUrl}
-          lastActiveAt={user.lastActiveAt}
           onPressProfile={openAccount}
           onPressMenu={() => setMenuOpen(true)}
         />
@@ -133,11 +148,20 @@ export default function CustomerHomeScreen({ user, token, onLogout, onAvatarUpda
           />
         )}
 
+        {activeTab === "home" && locationErrorKey && (
+          <View style={[styles.locationBanner, { backgroundColor: colors.surfaceElevated, borderColor: colors.border }]}>
+            <Ionicons name="location-outline" size={16} color={colors.warning} />
+            <Text style={{ color: colors.textSecondary, fontSize: 12, marginLeft: 8, flex: 1 }}>
+              {t(locationErrorKey === "denied" ? "map.locationPermissionDenied" : "map.locationUnavailable")}
+            </Text>
+          </View>
+        )}
+
         <View style={styles.body}>
           {activeTab === "home" && (
             <MapSection
               technicians={technicians}
-              userLocation={FALLBACK_LOCATION}
+              userLocation={liveCoords}
               radiusKm={NEARBY_RADIUS_KM}
               onSelectTechnician={setSelectedTechnicianId}
               selectedTechnicianId={selectedTechnicianId}
@@ -177,7 +201,6 @@ export default function CustomerHomeScreen({ user, token, onLogout, onAvatarUpda
         userName={user.fullName}
         email={user.email}
         avatarUrl={user.avatarUrl}
-        lastActiveAt={user.lastActiveAt}
         onViewProfile={openAccount}
         onChangePassword={openChangePassword}
         onNeedSupport={openSupport}
@@ -205,4 +228,13 @@ const styles = StyleSheet.create({
   // wireframe), so no horizontal padding or rounded card wrapper here.
   body: { flex: 1 },
   navWrap: { position: "relative" },
+  locationBanner: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginHorizontal: 16,
+    marginBottom: 8,
+    padding: 10,
+    borderRadius: 10,
+    borderWidth: 1,
+  },
 });

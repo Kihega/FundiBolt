@@ -12,6 +12,12 @@ const API_URL = process.env.EXPO_PUBLIC_API_URL || "http://localhost:4000";
 
 export type MessageSender = "me" | "them";
 
+// Only ever meaningful for sender === "me" - the other party's own
+// messages have no status to show. "read" is a client-side heuristic
+// (see MessagesScreen.tsx's handleSend), not a real backend read
+// receipt - there's no per-message readAt tracking on the server yet.
+export type MessageStatus = "sent" | "delivered" | "read";
+
 export type Message = {
   id: string;
   conversationId: string;
@@ -19,6 +25,7 @@ export type Message = {
   sender: MessageSender;
   /** ISO 8601 timestamp. */
   sentAt: string;
+  status?: MessageStatus;
 };
 
 export type Conversation = {

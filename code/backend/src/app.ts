@@ -11,6 +11,7 @@ import otpRoutes from "./routes/otp.routes";
 import userRoutes from "./routes/user.routes";
 import bookingRoutes from "./routes/booking.routes";
 import conversationRoutes from "./routes/conversation.routes";
+import technicianRoutes from "./routes/technician.routes";
 
 export const app = express();
 
@@ -57,3 +58,4 @@ app.use("/api/otp", otpRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/bookings", bookingRoutes);
 app.use("/api/conversations", conversationRoutes);
+app.use("/api/technicians", technicianRoutes);

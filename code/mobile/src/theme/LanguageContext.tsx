@@ -18,6 +18,9 @@ const STRINGS: Record<Language, Record<string, string>> = {
 
     "search.placeholder": "Search Technician",
 
+    "map.locationPermissionDenied": "FundiBolt needs your location to show nearby technicians and center the map on you. You can allow this in your phone's Settings.",
+    "map.locationUnavailable": "Couldn't get your current location. Showing the default area instead.",
+
     "sideMenu.viewProfile": "View Profile",
     "sideMenu.changePassword": "Change Password",
     "sideMenu.changeLanguage": "Change Language",
@@ -38,7 +41,7 @@ const STRINGS: Record<Language, Record<string, string>> = {
     "changePassword.confirm": "Confirm",
     "changePassword.close": "Close",
     "changePassword.fillAllFields": "Please fill in all fields.",
-    "changePassword.tooShort": "New password must be at least 6 characters.",
+    "changePassword.tooShort": "New password must be at least 8 characters.",
     "changePassword.mismatch": "New password and confirmation don't match.",
     "changePassword.success": "Your password has been changed.",
 
@@ -86,6 +89,9 @@ const STRINGS: Record<Language, Record<string, string>> = {
 
     "search.placeholder": "Tafuta Fundi",
 
+    "map.locationPermissionDenied": "FundiBolt inahitaji mahali ulipo ili kuonyesha mafundi walio karibu na kuweka ramani katikati yako. Unaweza kuruhusu hili kwenye Mipangilio ya simu yako.",
+    "map.locationUnavailable": "Imeshindwa kupata mahali ulipo. Tunaonyesha eneo la kawaida badala yake.",
+
     "sideMenu.viewProfile": "Tazama Wasifu",
     "sideMenu.changePassword": "Badilisha Nywila",
     "sideMenu.changeLanguage": "Badilisha Lugha",
@@ -106,7 +112,7 @@ const STRINGS: Record<Language, Record<string, string>> = {
     "changePassword.confirm": "Thibitisha",
     "changePassword.close": "Funga",
     "changePassword.fillAllFields": "Tafadhali jaza sehemu zote.",
-    "changePassword.tooShort": "Nywila mpya lazima iwe na herufi 6 au zaidi.",
+    "changePassword.tooShort": "Nywila mpya lazima iwe na herufi 8 au zaidi.",
     "changePassword.mismatch": "Nywila mpya na uthibitisho hazifanani.",
     "changePassword.success": "Nywila yako imebadilishwa.",
 
