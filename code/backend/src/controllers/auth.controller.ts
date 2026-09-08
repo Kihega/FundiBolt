@@ -34,8 +34,15 @@ export async function signup(req: Request, res: Response) {
   if (!fullName || !email || !password) {
     return res.status(400).json({ message: "fullName, email, and password are required." });
   }
-  if (password.length < 6) {
-    return res.status(400).json({ message: "Password must be at least 6 characters." });
+  // 8 rather than the previous 6 - a bare minimum-length check is weak
+  // either way, but 6 is below what most current guidance (e.g. NIST SP
+  // 800-63B) treats as an acceptable floor. The mobile app's own signup
+  // form already nudges toward much stronger passwords via a client-side
+  // strength meter (see mobile: utils/passwordStrength.ts) - this is the
+  // server-side floor beneath that, since client-side-only validation is
+  // trivially bypassed by anyone calling this endpoint directly.
+  if (password.length < 8) {
+    return res.status(400).json({ message: "Password must be at least 8 characters." });
   }
 
   const signupRole = normalizeSignupRole(role);
@@ -116,8 +123,8 @@ export async function changePassword(req: AuthedRequest, res: Response) {
   if (!oldPassword || !newPassword) {
     return res.status(400).json({ message: "oldPassword and newPassword are required." });
   }
-  if (newPassword.length < 6) {
-    return res.status(400).json({ message: "New password must be at least 6 characters." });
+  if (newPassword.length < 8) {
+    return res.status(400).json({ message: "New password must be at least 8 characters." });
   }
   if (!req.user) {
     return res.status(401).json({ message: "Missing or invalid Authorization header." });

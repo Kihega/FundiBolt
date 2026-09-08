@@ -4,7 +4,6 @@ import { Ionicons } from "@expo/vector-icons";
 import { useTheme } from "../theme/ThemeContext";
 import { useLanguage, Language } from "../theme/LanguageContext";
 import { useResponsive } from "../theme/responsive";
-import { getOnlineStatus } from "../utils/onlineStatus";
 import Avatar from "./Avatar";
 
 type Props = {
@@ -13,7 +12,6 @@ type Props = {
   userName: string;
   email: string;
   avatarUrl?: string | null;
-  lastActiveAt?: string | null;
   onViewProfile: () => void;
   onChangePassword: () => void;
   onNeedSupport: () => void;
@@ -31,7 +29,6 @@ export default function SideMenu({
   userName,
   email,
   avatarUrl,
-  lastActiveAt,
   onViewProfile,
   onChangePassword,
   onNeedSupport,
@@ -39,7 +36,6 @@ export default function SideMenu({
   const { colors, fontFamily, fontSize, spacing, isDark, toggleTheme } = useTheme();
   const { language, setLanguage, t } = useLanguage();
   const { width } = useResponsive();
-  const { isOnline } = getOnlineStatus(lastActiveAt);
 
   const [expanded, setExpanded] = useState<ExpandedSection>(null);
   const panelWidth = Math.min(width * 0.8, 320);
@@ -91,7 +87,10 @@ export default function SideMenu({
               onPress={onViewProfile}
               style={[styles.profileRow, { borderBottomColor: colors.border, paddingHorizontal: spacing.lg, paddingVertical: spacing.lg }]}
             >
-              <Avatar uri={avatarUrl} name={userName} size={56} isOnline={isOnline} />
+              {/* Own avatar - see TopBar.tsx's doc comment for why this is
+                  hardcoded true rather than derived from a stale
+                  lastActiveAt snapshot. */}
+              <Avatar uri={avatarUrl} name={userName} size={56} isOnline={true} />
               <View style={{ marginLeft: spacing.md, flex: 1 }}>
                 <Text numberOfLines={1} style={{ color: colors.textPrimary, fontFamily: fontFamily.headingSemiBold, fontSize: fontSize.base }}>
                   {userName}

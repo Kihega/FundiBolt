@@ -2,14 +2,12 @@ import React from "react";
 import { View, Image, TouchableOpacity, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useTheme } from "../theme/ThemeContext";
-import { getOnlineStatus } from "../utils/onlineStatus";
 import BrandWordmark from "./BrandWordmark";
 import Avatar from "./Avatar";
 
 type Props = {
   userName: string;
   avatarUrl?: string | null;
-  lastActiveAt?: string | null;
   onPressProfile: () => void;
   /** Opens the side drawer/menu. Optional so existing callers keep working; defaults to a disabled no-op until a real drawer exists. */
   onPressMenu?: () => void;
@@ -18,9 +16,8 @@ type Props = {
 // Home screen header, per the approved wireframe: hamburger menu on the far
 // left, logo + "FundiBolt" wordmark next to it, and the profile avatar
 // (with a green "online" dot) on the right.
-export default function TopBar({ userName, avatarUrl, lastActiveAt, onPressProfile, onPressMenu }: Props) {
+export default function TopBar({ userName, avatarUrl, onPressProfile, onPressMenu }: Props) {
   const { colors, spacing, fontSize } = useTheme();
-  const { isOnline } = getOnlineStatus(lastActiveAt);
 
   return (
     <View style={[styles.row, { paddingHorizontal: spacing.lg, paddingVertical: spacing.md }]}>
@@ -39,7 +36,21 @@ export default function TopBar({ userName, avatarUrl, lastActiveAt, onPressProfi
       </View>
 
       <TouchableOpacity onPress={onPressProfile} accessibilityRole="button" accessibilityLabel="Open profile">
-        <Avatar uri={avatarUrl} name={userName} size={44} isOnline={isOnline} />
+        {/*
+          isOnline is hardcoded true here rather than derived from
+          lastActiveAt (as it was before): this is the CURRENT
+          authenticated user's own avatar - if they're looking at this
+          screen, the app is open and they're online, full stop. Deriving
+          it from a "last known activity" timestamp only makes sense for
+          someone ELSE's presence (see utils/onlineStatus.ts, still used
+          for that elsewhere) - applied to your own avatar, that
+          timestamp is just a stale snapshot from whenever you logged in,
+          which the client never refreshes. That's exactly why the dot
+          used to disappear ~10 minutes into a session even while
+          actively using the app: nothing was wrong with your activity,
+          the client just never told itself it was still active.
+        */}
+        <Avatar uri={avatarUrl} name={userName} size={44} isOnline={true} />
       </TouchableOpacity>
     </View>
   );

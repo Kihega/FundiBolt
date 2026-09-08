@@ -6,7 +6,6 @@ import { useTheme } from "../theme/ThemeContext";
 import { useLanguage } from "../theme/LanguageContext";
 import { useResponsive } from "../theme/responsive";
 import { AuthUser } from "../types/user";
-import { getOnlineStatus } from "../utils/onlineStatus";
 import { uploadAvatar } from "../services/profile";
 import Avatar from "../components/Avatar";
 import GradientButton from "../components/GradientButton";
@@ -34,7 +33,6 @@ export default function AccountScreen({ user, token, onLogout, onAvatarUpdated }
   const { colors, fontFamily, fontSize, spacing, radius } = useTheme();
   const { t } = useLanguage();
   const { maxContentWidth } = useResponsive();
-  const { isOnline } = getOnlineStatus(user.lastActiveAt);
 
   const [isPhotoModalVisible, setPhotoModalVisible] = useState(false);
   const [isUploading, setUploading] = useState(false);
@@ -111,11 +109,14 @@ export default function AccountScreen({ user, token, onLogout, onAvatarUpdated }
       <View style={{ width: "100%", maxWidth: maxContentWidth, alignSelf: "center", padding: spacing.lg }}>
         <View style={styles.avatarSection}>
           <View>
-            {/* The green "online" dot uses the same presence logic as the
-                top bar's avatar (utils/onlineStatus.ts) - now backed by a
-                real lastActiveAt the backend touches on every
-                authenticated request (see auth.middleware.ts). */}
-            <Avatar uri={user.avatarUrl} name={user.fullName} size={96} isOnline={isOnline} />
+            {/* Own avatar - hardcoded online, same reasoning as
+                TopBar.tsx: this is your own account screen, so if you're
+                viewing it the app is open and authenticated, meaning
+                you're online right now. Deriving this from lastActiveAt
+                (a snapshot the client never refreshes) was the actual
+                bug - it made the dot silently disappear ~10 minutes into
+                any session regardless of real activity. */}
+            <Avatar uri={user.avatarUrl} name={user.fullName} size={96} isOnline={true} />
             <TouchableOpacity
               onPress={openPhotoModal}
               style={[styles.editBadge, { backgroundColor: colors.primary, borderColor: colors.background }]}
