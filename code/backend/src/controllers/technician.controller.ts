@@ -3,6 +3,7 @@ import { prisma } from "../config/prisma";
 import { AuthedRequest } from "../middleware/auth.middleware";
 import { haversineDistanceKm, LOCATION_FRESHNESS_MINUTES } from "../utils/geo";
 import { toAbsoluteAvatarUrl } from "../utils/publicUrl";
+import { QUALIFICATION_THRESHOLD } from "../utils/qualification";
 
 // Defensive caps - neither is about correctness, both are about not
 // letting a single request turn into an unbounded scan or an oversized
@@ -51,6 +52,13 @@ export async function getNearbyTechnicians(req: AuthedRequest, res: Response) {
         latitude: { not: null },
         longitude: { not: null },
         locationUpdatedAt: { gte: freshSince },
+        // Item 1's core rule: a technician only becomes visible/bookable
+        // once their profile reaches QUALIFICATION_THRESHOLD (see
+        // utils/qualification.ts) - qualificationScore is recomputed and
+        // persisted on every profile change (user.controller.ts), so this
+        // is a plain indexed-friendly comparison rather than recomputing
+        // the score for every candidate on every request.
+        qualificationScore: { gte: QUALIFICATION_THRESHOLD },
       },
       select: {
         id: true,
