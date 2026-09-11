@@ -12,4 +12,11 @@ export const PUBLIC_USER_SELECT = {
   emailVerified: true,
   avatarUrl: true,
   lastActiveAt: true,
+  specialty: true,
+  skills: true,
+  bio: true,
+  hourlyRate: true,
+  yearsExperience: true,
+  idDocumentUrl: true,
+  qualificationScore: true,
 } as const;

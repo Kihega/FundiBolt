@@ -65,6 +65,19 @@ model User {
   rating      Float?   @default(0)
   ratingCount Int      @default(0) @map("rating_count")
 
+  // Qualification/onboarding fields (technician accounts only) - see
+  // utils/qualification.ts for the scoring rubric. qualificationScore is
+  // recomputed and stored every time any of these fields change (see
+  // updateTechnicianProfile/uploadIdDocument in user.controller.ts), so it
+  // can be filtered on directly (technician.controller.ts) instead of
+  // recomputing it on every nearby-technicians request.
+  bio                String?
+  hourlyRate         Float?
+  yearsExperience    Int?     @map("years_experience")
+  // Relative /uploads path, same pattern as avatarUrl.
+  idDocumentUrl      String?  @map("id_document_url")
+  qualificationScore Int      @default(0) @map("qualification_score")
+
   createdAt     DateTime  @default(now()) @map("created_at")
   updatedAt     DateTime  @updatedAt @map("updated_at")
 

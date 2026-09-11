@@ -3,6 +3,7 @@ import { prisma } from "../config/prisma";
 import { AuthedRequest } from "../middleware/auth.middleware";
 import { toAbsoluteAvatarUrl, withAbsoluteAvatarUrl } from "../utils/publicUrl";
 import { PUBLIC_USER_SELECT } from "../utils/userSelect";
+import { computeQualificationScore } from "../utils/qualification";
 
 // Lets the mobile app refresh the logged-in user's own details (e.g.
 // after this session's avatar upload) without a full re-login. Not called
@@ -99,5 +100,134 @@ export async function updateMyLocation(req: AuthedRequest, res: Response) {
   } catch (err) {
     console.error("Update location error:", err);
     return res.status(500).json({ message: "Could not update your location." });
+  }
+}
+
+const MAX_BIO_LENGTH = 1000;
+const MAX_SKILLS = 20;
+
+// Powers the technician profile/qualification screen (mobile:
+// screens/TechnicianProfileScreen.tsx). Restricted to fundi accounts -
+// these fields are meaningless for customer/admin accounts. Every field is
+// optional per-request (only whatever's included gets updated), and
+// qualificationScore is always recomputed from the FULL resulting profile
+// (not just the fields in this request) so it never drifts out of sync
+// with what's actually stored.
+export async function updateTechnicianProfile(req: AuthedRequest, res: Response) {
+  if (!req.user) {
+    return res.status(401).json({ message: "Missing or invalid Authorization header." });
+  }
+  if (req.user.role !== "fundi") {
+    return res.status(403).json({ message: "Only technician accounts have a technician profile." });
+  }
+
+  const { specialty, skills, bio, hourlyRate, yearsExperience } = req.body;
+
+  const data: Record<string, unknown> = {};
+
+  if (specialty !== undefined) {
+    if (typeof specialty !== "string" || specialty.length > 100) {
+      return res.status(400).json({ message: "specialty must be a string up to 100 characters." });
+    }
+    data.specialty = specialty || null;
+  }
+
+  if (skills !== undefined) {
+    if (!Array.isArray(skills) || !skills.every((s) => typeof s === "string")) {
+      return res.status(400).json({ message: "skills must be an array of strings." });
+    }
+    if (skills.length > MAX_SKILLS) {
+      return res.status(400).json({ message: `skills can have at most ${MAX_SKILLS} entries.` });
+    }
+    data.skills = skills.map((s: string) => s.trim()).filter(Boolean);
+  }
+
+  if (bio !== undefined) {
+    if (typeof bio !== "string" || bio.length > MAX_BIO_LENGTH) {
+      return res.status(400).json({ message: `bio must be a string up to ${MAX_BIO_LENGTH} characters.` });
+    }
+    data.bio = bio || null;
+  }
+
+  if (hourlyRate !== undefined) {
+    const rate = Number(hourlyRate);
+    if (!Number.isFinite(rate) || rate < 0) {
+      return res.status(400).json({ message: "hourlyRate must be a non-negative number." });
+    }
+    data.hourlyRate = rate;
+  }
+
+  if (yearsExperience !== undefined) {
+    const years = Number(yearsExperience);
+    if (!Number.isInteger(years) || years < 0 || years > 80) {
+      return res.status(400).json({ message: "yearsExperience must be a whole number between 0 and 80." });
+    }
+    data.yearsExperience = years;
+  }
+
+  if (Object.keys(data).length === 0) {
+    return res.status(400).json({ message: "No valid fields to update." });
+  }
+
+  try {
+    const current = await prisma.user.findUnique({ where: { id: req.user.userId } });
+    if (!current) {
+      return res.status(404).json({ message: "Account not found." });
+    }
+
+    const merged = { ...current, ...data } as typeof current;
+    const qualificationScore = computeQualificationScore(merged).score;
+
+    const user = await prisma.user.update({
+      where: { id: req.user.userId },
+      data: { ...data, qualificationScore },
+      select: PUBLIC_USER_SELECT,
+    });
+
+    return res.status(200).json({ user: withAbsoluteAvatarUrl(user) });
+  } catch (err) {
+    console.error("Update technician profile error:", err);
+    return res.status(500).json({ message: "Could not update your profile." });
+  }
+}
+
+// Powers the ID-verification step of the technician profile screen. Same
+// multer-then-controller pattern as uploadAvatar (see config/upload.ts's
+// idDocumentUpload) - by the time this runs, req.file already points at
+// the saved file on disk.
+export async function uploadIdDocument(req: AuthedRequest, res: Response) {
+  if (!req.user) {
+    return res.status(401).json({ message: "Missing or invalid Authorization header." });
+  }
+  if (req.user.role !== "fundi") {
+    return res.status(403).json({ message: "Only technician accounts can upload ID verification." });
+  }
+
+  const file = (req as AuthedRequest & { file?: Express.Multer.File }).file;
+  if (!file) {
+    return res.status(400).json({ message: "No document file was uploaded." });
+  }
+
+  try {
+    const relativeIdDocumentUrl = `/uploads/id-documents/${file.filename}`;
+
+    const current = await prisma.user.findUnique({ where: { id: req.user.userId } });
+    if (!current) {
+      return res.status(404).json({ message: "Account not found." });
+    }
+
+    const merged = { ...current, idDocumentUrl: relativeIdDocumentUrl };
+    const qualificationScore = computeQualificationScore(merged).score;
+
+    const user = await prisma.user.update({
+      where: { id: req.user.userId },
+      data: { idDocumentUrl: relativeIdDocumentUrl, qualificationScore },
+      select: PUBLIC_USER_SELECT,
+    });
+
+    return res.status(200).json({ user: withAbsoluteAvatarUrl(user) });
+  } catch (err) {
+    console.error("Upload ID document error:", err);
+    return res.status(500).json({ message: "Could not save your ID document. Please try again." });
   }
 }

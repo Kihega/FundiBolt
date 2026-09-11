@@ -14,6 +14,7 @@ import SignupScreen, { SignupRole } from "./src/screens/SignupScreen";
 import OtpVerificationScreen from "./src/screens/OtpVerificationScreen";
 import HomeScreen from "./src/screens/HomeScreen";
 import CustomerHomeScreen from "./src/screens/CustomerHomeScreen";
+import TechnicianHomeScreen from "./src/screens/TechnicianHomeScreen";
 import { AuthUser } from "./src/types/user";
 
 SplashScreenNative.preventAutoHideAsync();
@@ -130,13 +131,32 @@ function Root() {
     setAuthUser((prev) => (prev ? { ...prev, avatarUrl } : prev));
   };
 
-  // Role-based home routing. Only the customer dashboard is built this
-  // sprint - fundi (technician) and admin each get their own home screen in
-  // a later sprint (admin's is a separate web dashboard entirely, per the
-  // product plan). Both fall back to the generic placeholder for now.
+  // Same pattern as handleAvatarUpdated, for the technician-only
+  // qualification fields (see TechnicianProfileScreen.tsx / item 1) - so
+  // a freshly-saved specialty/bio/etc. is reflected immediately without
+  // requiring a re-login.
+  const handleProfileUpdated = (patch: Partial<AuthUser>) => {
+    setAuthUser((prev) => (prev ? { ...prev, ...patch } : prev));
+  };
+
+  // Role-based home routing. Only the customer and technician dashboards
+  // are built so far - admin gets its own (separate, web) dashboard per
+  // the product plan, and falls back to the generic placeholder for now.
   if (authUser?.role === "customer" && authToken) {
     return (
       <CustomerHomeScreen user={authUser} token={authToken} onLogout={handleLogout} onAvatarUpdated={handleAvatarUpdated} />
+    );
+  }
+
+  if (authUser?.role === "fundi" && authToken) {
+    return (
+      <TechnicianHomeScreen
+        user={authUser}
+        token={authToken}
+        onLogout={handleLogout}
+        onAvatarUpdated={handleAvatarUpdated}
+        onProfileUpdated={handleProfileUpdated}
+      />
     );
   }
 

@@ -18,4 +18,15 @@ export type AuthUser = {
   // by the backend (no presence tracking exists there yet) - optional so
   // the UI degrades to "offline" until that lands.
   lastActiveAt?: string | null;
+  // Technician-only fields (see backend PUBLIC_USER_SELECT /
+  // utils/qualification.ts) - always present in the login/signup/getMe
+  // response now, but only meaningful for role === "fundi"; customer/admin
+  // accounts just carry their defaults (empty/0) and never read them.
+  specialty?: string | null;
+  skills?: string[];
+  bio?: string | null;
+  hourlyRate?: number | null;
+  yearsExperience?: number | null;
+  idDocumentUrl?: string | null;
+  qualificationScore?: number;
 };
